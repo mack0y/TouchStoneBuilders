@@ -6,6 +6,8 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import NotFound from './pages/NotFound'
 import PlaceholderPage from './pages/PlaceholderPage'
+import Products from './pages/Products'
+import Categories from './pages/Categories'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -38,7 +40,8 @@ export default function App() {
 
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
-            <Route path="products" element={<PlaceholderPage title="Products" description="Manage your product inventory" />} />
+            <Route path="products" element={<Products />} />
+            <Route path="categories" element={<Categories />} />
             <Route path="sales" element={<PlaceholderPage title="Sales" description="View and create sales transactions" />} />
             <Route path="purchases" element={<PlaceholderPage title="Purchases" description="Record incoming stock and purchases" />} />
             <Route path="customers" element={<PlaceholderPage title="Customers" description="Manage customer information" />} />

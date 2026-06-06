@@ -1,0 +1,232 @@
+import { useState } from 'react'
+import { useProducts } from '../hooks/useProducts'
+import { useCategories } from '../hooks/useCategories'
+import { useAuth } from '../hooks/useAuth'
+import PageHeader from '../components/ui/PageHeader'
+import DataTable from '../components/ui/DataTable'
+import Modal from '../components/ui/Modal'
+import { createColumnHelper } from '@tanstack/react-table'
+
+const units = ['pcs', 'kg', 'sack', 'meter', 'liter', 'sheet', 'box', 'pack', 'set', 'gallon', 'roll', 'bd.ft', 'cu.m', 'pair']
+
+const emptyForm = { sku: '', name: '', description: '', category_id: '', unit: 'pcs', price: '', cost: '', stock_quantity: '0', reorder_level: '0', image_url: '' }
+
+export default function Products() {
+  const { products, loading, error: loadError, createProduct, updateProduct, deleteProduct } = useProducts()
+  const { categories } = useCategories()
+  const { isAdmin } = useAuth()
+
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState(emptyForm)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
+
+  function openCreate() {
+    setEditing(null)
+    setForm(emptyForm)
+    setError('')
+    setModalOpen(true)
+  }
+
+  function openEdit(product) {
+    setEditing(product)
+    setForm({
+      sku: product.sku,
+      name: product.name,
+      description: product.description || '',
+      category_id: product.category_id?.toString() || '',
+      unit: product.unit,
+      price: String(product.price ?? ''),
+      cost: String(product.cost ?? ''),
+      stock_quantity: String(product.stock_quantity ?? '0'),
+      reorder_level: String(product.reorder_level ?? '0'),
+      image_url: product.image_url || '',
+    })
+    setError('')
+    setModalOpen(true)
+  }
+
+  async function handleSave(e) {
+    e.preventDefault()
+    setError('')
+    setSaving(true)
+    try {
+      const payload = {
+        sku: form.sku.trim(),
+        name: form.name.trim(),
+        description: form.description.trim() || null,
+        category_id: form.category_id ? Number(form.category_id) : null,
+        unit: form.unit,
+        price: parseFloat(form.price) || 0,
+        cost: parseFloat(form.cost) || 0,
+        stock_quantity: parseFloat(form.stock_quantity) || 0,
+        reorder_level: parseFloat(form.reorder_level) || 0,
+        image_url: form.image_url.trim() || null,
+      }
+      if (editing) {
+        await updateProduct(editing.id, payload)
+      } else {
+        await createProduct(payload)
+      }
+      setModalOpen(false)
+    } catch (err) {
+      setError(err.message || 'Failed to save product')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function handleDelete(product) {
+    if (window.confirm(`Delete "${product.name}"? This cannot be undone.`)) {
+      deleteProduct(product.id).catch((err) => setError(err.message))
+    }
+  }
+
+  const filtered = categoryFilter
+    ? products.filter((p) => p.category_id === Number(categoryFilter))
+    : products
+
+  const columnHelper = createColumnHelper()
+
+  const columns = [
+    columnHelper.accessor('sku', { header: 'SKU', enableSorting: true }),
+    columnHelper.accessor('name', { header: 'Name', enableSorting: true }),
+    columnHelper.accessor((row) => row.categories?.name || '-', { id: 'category', header: 'Category', enableSorting: true }),
+    columnHelper.accessor('unit', { header: 'Unit', enableSorting: true }),
+    columnHelper.accessor('price', {
+      header: 'Price',
+      enableSorting: true,
+      cell: (info) => `₱${Number(info.getValue()).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+    }),
+    columnHelper.accessor('stock_quantity', {
+      header: 'Stock',
+      enableSorting: true,
+      cell: (info) => {
+        const qty = Number(info.getValue())
+        const reorder = Number(info.row.original.reorder_level)
+        return (
+          <span className={qty <= reorder ? 'text-error font-medium' : ''}>
+            {qty.toLocaleString()}
+            {qty <= reorder && ' ⚠'}
+          </span>
+        )
+      },
+    }),
+    ...(isAdmin ? [columnHelper.display({
+      id: 'actions',
+      header: '',
+      cell: (info) => (
+        <div className="flex gap-1 justify-end">
+          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(info.row.original)}>Edit</button>
+          <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDelete(info.row.original)}>Del</button>
+        </div>
+      ),
+    })] : []),
+  ]
+
+  return (
+    <div>
+      <PageHeader
+        title="Products"
+        description={`${products.length} product${products.length !== 1 ? 's' : ''} total`}
+        actions={
+          <>
+            <select className="select select-bordered select-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+              <option value="">All categories</option>
+              {categories.map((c) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+            </select>
+            {isAdmin && <button className="btn btn-primary btn-sm" onClick={openCreate}>+ Add Product</button>}
+          </>
+        }
+      />
+
+      {loadError && (
+        <div className="alert alert-error text-sm mb-4">{loadError}</div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
+      ) : (
+        <div className="card bg-base-100 border border-base-300">
+          <div className="card-body p-3">
+            <DataTable columns={columns} data={filtered} searchPlaceholder="Search products..." />
+          </div>
+        </div>
+      )}
+
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Product' : 'Add Product'}>
+        <form onSubmit={handleSave} className="flex flex-col gap-3">
+          {error && <div className="alert alert-error text-sm py-2">{error}</div>}
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="form-control">
+              <span className="label-text">SKU</span>
+              <input className="input input-bordered input-sm" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} required />
+            </label>
+            <label className="form-control">
+              <span className="label-text">Unit</span>
+              <select className="select select-bordered select-sm" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}>
+                {units.map((u) => <option key={u} value={u}>{u}</option>)}
+              </select>
+            </label>
+          </div>
+
+          <label className="form-control">
+            <span className="label-text">Name</span>
+            <input className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          </label>
+
+          <label className="form-control">
+            <span className="label-text">Description</span>
+            <textarea className="textarea textarea-bordered textarea-sm" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </label>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="form-control">
+              <span className="label-text">Category</span>
+              <select className="select select-bordered select-sm" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
+                <option value="">—</option>
+                {categories.map((c) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+              </select>
+            </label>
+            <label className="form-control">
+              <span className="label-text">Image URL</span>
+              <input className="input input-bordered input-sm" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="form-control">
+              <span className="label-text">Selling Price (₱)</span>
+              <input type="number" step="0.01" min="0" className="input input-bordered input-sm" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+            </label>
+            <label className="form-control">
+              <span className="label-text">Cost Price (₱)</span>
+              <input type="number" step="0.01" min="0" className="input input-bordered input-sm" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} required />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="form-control">
+              <span className="label-text">Stock Quantity</span>
+              <input type="number" step="0.001" min="0" className="input input-bordered input-sm" value={form.stock_quantity} onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })} />
+            </label>
+            <label className="form-control">
+              <span className="label-text">Reorder Level</span>
+              <input type="number" step="0.001" min="0" className="input input-bordered input-sm" value={form.reorder_level} onChange={(e) => setForm({ ...form, reorder_level: e.target.value })} />
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-2">
+            <button type="button" className="btn btn-soft btn-sm" onClick={() => setModalOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+              {saving ? <span className="loading loading-spinner loading-xs" /> : editing ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  )
+}

@@ -192,16 +192,22 @@ touchstone-builders/
     ├── lib/
     │   └── supabaseClient.js  # Supabase client from env vars
     ├── hooks/
-    │   └── useAuth.jsx        # Auth context + provider
+    │   ├── useAuth.jsx        # Auth context + provider
+    │   ├── useProducts.js     # Products CRUD (Supabase queries + error/mounted guard)
+    │   └── useCategories.js   # Categories CRUD w/ product count join
     ├── components/
     │   ├── layout/
     │   │   └── AppLayout.jsx  # Responsive sidebar + navbar
     │   └── ui/
     │       ├── PageHeader.jsx
-    │       └── LoadingScreen.jsx
+    │       ├── LoadingScreen.jsx
+    │       ├── DataTable.jsx  # Reusable TanStack table (sort, search, paginate)
+    │       └── Modal.jsx      # DaisyUI dialog wrapper (ref-safe onClose)
     └── pages/
         ├── Login.jsx          # Email/password form
         ├── Dashboard.jsx      # KPI cards + recent sales + alerts
+        ├── Products.jsx       # Full CRUD w/ search, filter, low stock badge
+        ├── Categories.jsx     # Full CRUD w/ product count
         ├── NotFound.jsx       # 404 page
         └── PlaceholderPage.jsx# Generic "Coming soon" page
 ```
@@ -291,19 +297,19 @@ touchstone-builders/
 - Dashboard with 4 stat cards (placeholder values) + Recent Sales / Low Stock panels
 - Debug Agent reviewed and fixed: Tailwind v4 incompatibilities (w-18, bg-opacity-20), missing ARIA labels, decorative icon accessibility
 
+### Phase 4 — Products & Categories CRUD ✓
+- DataTable reusable component (TanStack Table v8: sortable, searchable, paginated, with ARIA attributes)
+- Modal reusable component (DaisyUI dialog with ref-stable onClose, aria-labelledby)
+- useProducts hook (CRUD with Supabase queries, error state, mountedRef unmount guard)
+- useCategories hook (CRUD with `products(count)` join for product count)
+- Products page: full CRUD, category filter, SKU/name/price/stock columns, low stock warning badge, admin-only Edit/Del/Add buttons, form with unit select and numeric validation
+- Categories page: full CRUD, product count column, admin-only Edit/Del/Add, delete with FK constraint error handling
+- Catches: null crash on edit (`String(product.price ?? '')`), NaN in numeric fields (`parseFloat || 0`), misleading delete error messages, "Page 1 of 0" in pagination, unmount memory leaks, silent hook errors
+- Debug Agent reviewed and fixed: all 1 critical, 5 high, 5 medium issues resolved. Build passes with 0 errors.
+
 ---
 
 ## Remaining Phases
-
-### Phase 4 — Products & Categories CRUD
-- [ ] DataTable reusable component (TanStack Table: sortable, searchable, paginated)
-- [ ] Products page — fetch from Supabase, display in DataTable
-- [ ] Add/Edit product modal with React Hook Form + Zod validation
-- [ ] Delete product with confirmation
-- [ ] Category management (inline in products page or separate modal)
-- [ ] Low stock badge (reorder level comparison)
-- [ ] Search by name/SKU, filter by category
-- [ ] Debug Agent review
 
 ### Phase 5 — Customers & Suppliers
 - [ ] Customer list page + add/edit modal
