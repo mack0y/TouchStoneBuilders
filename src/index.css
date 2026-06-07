@@ -193,10 +193,10 @@ body {
   .mobile-card-view th,
   .mobile-card-view td,
   .mobile-card-view tr {
-    display: block;
+    display: block !important;
   }
   .mobile-card-view thead {
-    position: absolute;
+    position: absolute !important;
     width: 1px; height: 1px;
     overflow: hidden;
     clip: rect(0 0 0 0);
@@ -210,7 +210,7 @@ body {
     box-shadow: var(--shadow-sm);
   }
   .mobile-card-view td {
-    display: flex;
+    display: flex !important;
     justify-content: space-between;
     align-items: center;
     padding: 6px 0;
@@ -229,12 +229,28 @@ body {
     text-align: left;
     flex: 1;
   }
+  .mobile-card-view tfoot { display: block !important; }
+  .mobile-card-view tfoot tr { border-top: 2px solid #e2e8f0; }
 }
 
 /* ── Touch targets ── */
 @media (max-width: 1023px) {
   .btn { min-height: 2.75rem; min-width: 2.75rem; }
   .btn-sm { min-height: 2.25rem; }
+  .input, .select, .textarea { min-height: 2.75rem; }
+  .input-sm, .select-sm, .textarea-sm { min-height: 2.25rem; }
+}
+
+/* ── Reports tabs scroll ── */
+@media (max-width: 640px) {
+  [role="tablist"] {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    white-space: nowrap;
+    padding-bottom: 4px;
+  }
+  [role="tablist"]::-webkit-scrollbar { display: none; }
 }
 
 /* ── Print ── */

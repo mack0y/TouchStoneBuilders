@@ -66,7 +66,7 @@ export default function SaleDetail() {
           </div>
 
           {/* Items table */}
-          <div className="overflow-x-auto mt-4">
+          <div className="overflow-x-auto mobile-card-view mt-4">
             <table className="table table-zebra table-sm">
               <thead>
                 <tr>
@@ -79,15 +79,15 @@ export default function SaleDetail() {
               <tbody>
                 {items.map((it) => (
                   <tr key={it.id} className="hover:bg-base-200/30">
-                    <td>
+                    <td data-label="Item">
                       <div className="font-medium text-sm">{it.products?.name || 'Unknown product'}</div>
                       <div className="text-xs text-base-content/40">
                         {it.products?.sku} · per {it.products?.unit}
                       </div>
                     </td>
-                    <td className="text-right text-sm">{Number(it.quantity).toLocaleString()}</td>
-                    <td className="text-right text-sm">{peso(it.unit_price)}</td>
-                    <td className="text-right font-medium text-sm">{peso(it.subtotal)}</td>
+                    <td data-label="Qty" className="text-right text-sm">{Number(it.quantity).toLocaleString()}</td>
+                    <td data-label="Unit Price" className="text-right text-sm">{peso(it.unit_price)}</td>
+                    <td data-label="Subtotal" className="text-right font-medium text-sm">{peso(it.subtotal)}</td>
                   </tr>
                 ))}
               </tbody>

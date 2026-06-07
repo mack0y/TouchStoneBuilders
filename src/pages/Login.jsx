@@ -55,12 +55,12 @@ export default function Login() {
                   type="email"
                   id="email"
                   name="email"
-                  className="input input-bordered w-full mt-1"
+                  className="input input-bordered input-lg w-full mt-1"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  autoComplete="email"
+                  autoComplete="username"
                 />
               </label>
 
@@ -70,7 +70,7 @@ export default function Login() {
                   type="password"
                   id="password"
                   name="password"
-                  className="input input-bordered w-full mt-1"
+                  className="input input-bordered input-lg w-full mt-1"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

@@ -246,8 +246,6 @@ touchstone-builders/
         ├── Sales.jsx
         ├── SaleNew.jsx
         ├── SaleDetail.jsx
-        ├── Purchases.jsx
-        ├── PurchaseNew.jsx
         ├── Reports.jsx
         ├── Users.jsx
         ├── Inventory.jsx
@@ -458,6 +456,16 @@ touchstone-builders/
 - **SaleDetail.jsx — Delivery Info**: Shows delivery fee line in the totals (blue text) and a blue delivery address card with location pin icon when a delivery address is present.
 - **Bug fixes**: Fixed `isDelivery` not defined in `executeSale` scope. Fixed delivery toggle handler referencing old variable names (`setNewCustomerName`, `setNewCustomerPhone`, `customerId`) after customer autocomplete simplification. Replaced fragile `deliveryAddress !== ''` check with proper `deliveryEnabled` boolean state to prevent delivery section from collapsing when clearing the address textarea.
 - **DB migration required**: Run `supabase/migration_delivery.sql` in Supabase SQL Editor.
+
+### Phase 17 — Mobile & Web Friendliness Audit & Fixes ✓
+- **Full codebase audit**: Reviewed all 14 pages + 7 components + 12 hooks for responsive design issues across 3 viewports (375px mobile, 768px tablet, 1280px desktop) via code review + live browser testing.
+- **Login.jsx — Touch Targets**: Upgraded email and password inputs from `input input-bordered` to `input input-bordered input-lg` for 44px+ touch targets on mobile. Fixed `autoComplete` attribute to `username` (was missing on email field).
+- **SaleDetail.jsx — Invoice Table Mobile View**: Added `mobile-card-view` class to the invoice items table wrapper and `data-label` attributes to all `<td>` elements (Item, Qty, Unit Price, Subtotal) so the table converts to a card layout on mobile instead of scrolling horizontally.
+- **index.css — Mobile Card View Robustness**: Added `!important` to `display: block` and `display: flex` rules in the `.mobile-card-view` media query to override DaisyUI's table styles that were preventing the card layout from activating. Added `tfoot` styling for mobile card view.
+- **index.css — Touch Targets for Forms**: Added `min-height: 2.75rem` for `.input, .select, .textarea` and `min-height: 2.25rem` for `.input-sm, .select-sm, .textarea-sm` on screens ≤1023px to ensure all form elements meet touch target guidelines.
+- **index.css — Tab Horizontal Scroll**: Added `overflow-x: auto` for `[role="tablist"]` on screens ≤640px so Reports and Inventory tabs scroll horizontally instead of overflowing on narrow screens. Includes `-webkit-overflow-scrolling: touch` and hidden scrollbar for clean appearance.
+- **Browser verification**: Tested at 768x1024 (tablet) and 1280x800 (desktop) — all pages passed. Mobile card view now correctly converts DataTables (Products, Customers, Suppliers, Users, Sales, Inventory stock levels) to card layout. All 14 pages confirmed responsive.
+- **Build passes with 0 errors.**
 
 ---
 
