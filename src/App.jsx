@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { ToastProvider } from './hooks/useToast'
 import ErrorBoundary from './components/ui/ErrorBoundary'
@@ -35,6 +35,19 @@ function AdminRoute({ children }) {
   return children
 }
 
+function RedirectHandler() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    const redirect = sessionStorage.getItem('redirect')
+    if (redirect) {
+      sessionStorage.removeItem('redirect')
+      const path = redirect.replace('/TouchStoneBuilders', '') || '/'
+      navigate(path, { replace: true })
+    }
+  }, [navigate])
+  return null
+}
+
 function GuestRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return <LoadingScreen />
@@ -55,6 +68,7 @@ function PageSuspense({ children }) {
 export default function App() {
   return (
     <BrowserRouter basename="/TouchStoneBuilders">
+      <RedirectHandler />
       <AuthProvider>
         <ToastProvider>
           <Routes>
