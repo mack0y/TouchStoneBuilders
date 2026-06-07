@@ -53,7 +53,7 @@ Every phase follows this strict sequence:
 
 ## Branching & Commits
 
-- The repo has no .git (not initialized). Only commit when explicitly asked.
+- The repo has a git repository. Only commit when explicitly asked.
 - Commit messages should be concise and match the style of the existing log if initialized.
 
 ---
@@ -69,6 +69,7 @@ All tables are in the `public` schema. All use `CREATE TABLE IF NOT EXISTS` for 
 - `email` TEXT
 - `full_name` TEXT NOT NULL
 - `role` TEXT NOT NULL DEFAULT 'worker' CHECK ('admin','worker')
+- `is_active` BOOLEAN NOT NULL DEFAULT true
 - `created_at` TIMESTAMPTZ
 
 **categories**
@@ -117,6 +118,8 @@ All tables are in the `public` schema. All use `CREATE TABLE IF NOT EXISTS` for 
 - `subtotal` DECIMAL(12,2) ≥ 0
 - `discount` DECIMAL(12,2) ≥ 0 DEFAULT 0
 - `total` DECIMAL(12,2) ≥ 0
+- `delivery_address` TEXT (nullable — set for delivery orders)
+- `delivery_fee` DECIMAL(12,2) ≥ 0 DEFAULT 0
 - `created_at` TIMESTAMPTZ
 
 **sale_items**
@@ -137,7 +140,7 @@ All tables are in the `public` schema. All use `CREATE TABLE IF NOT EXISTS` for 
 - `total_cost` DECIMAL(12,2) ≥ 0
 - `created_at` TIMESTAMPTZ
 
-**stock_adjustments** (NEW — Phase 11)
+**stock_adjustments**
 - `id` BIGINT GENERATED ALWAYS AS IDENTITY PK
 - `product_id` BIGINT NOT NULL → products(id)
 - `quantity_change` DECIMAL(12,3) NOT NULL — positive to add, negative to remove
@@ -193,12 +196,15 @@ touchstone-builders/
 ├── vite.config.js
 ├── package.json
 ├── memory.md
+├── consoleError.txt
 ├── supabase/
 │   ├── reset.sql
 │   ├── schema.sql
 │   ├── migration_users.sql
 │   ├── migration_stock_adjustments.sql
-│   └── migration_inventory_delete.sql
+│   ├── migration_inventory_delete.sql
+│   ├── migration_fix_create_sale.sql
+│   └── migration_delivery.sql
 └── src/
     ├── main.jsx
     ├── App.jsx
@@ -358,7 +364,7 @@ touchstone-builders/
 - **Schema**: new `create_sale` RPC (transactional: sale + sale_items + stock check). `SECURITY INVOKER` so RLS applies; `user_id` taken from `auth.uid()` (no impersonation); input validation guards empty items and negative discount; stock check enforced by existing trigger with `SELECT FOR UPDATE` row lock; one tx rolls back on any item failure
 - **useSales.js**: `useSales({startDate, endDate})` (list with PHT-aware date filter), `useSale(id)` (single + items, with numeric-id validation), `createSale(...)` (RPC caller, coerces `sale_id` to number)
 - **Sales.jsx** (history): date range filter (auto-applies), invoice link → detail, total column sorts numerically (not as DECIMAL string), label `htmlFor` association, range in description ("from X to Y" etc.)
-- **SaleNew.jsx** (new sale form): product search/picker with out-of-stock + low-stock badges, cart table with editable qty + oversell guard, customer dropdown (Walk-in supported) with loading state, discount input (clamped to ≥0), auto-calc subtotal/total with `round2()` to match DB `DECIMAL`, sticky summary panel, **double-click prevention via `savingRef`**, error cleared at top of confirm
+- **SaleNew.jsx** (new sale form): product search/picker with out-of-stock + low-stock badges, cart table with editable qty + oversell guard, customer autocomplete input (Walk-in supported), discount input (clamped to ≥0), auto-calc subtotal/total with `round2()` to match DB `DECIMAL`, sticky summary panel, **double-click prevention via `savingRef`**, error cleared at top of confirm
 - **SaleDetail.jsx** (invoice view): read-only invoice with header (invoice # + date + customer info), items table, totals; print button (CSS `@media print` hides sidebar/navbar/`.no-print` chrome); "New Sale" + "Back" actions
 - Catches: timezone-naive date filter (8hr off in PHT), double-click duplicate sale risk, total column sorted as string, negative discount silently ignored, print included full app chrome, invalid IDs surfaced raw PG error, `create_sale` had no input validation, JS double arithmetic drift, BIGINT returned as string, dead `it.unit` fallback
 - Debug Agent reviewed and fixed: 0 critical, 3 high, 6 medium, 9 low issues resolved. Build passes with 0 errors.
@@ -433,6 +439,25 @@ touchstone-builders/
 - **Debug log cleanup**: Removed `console.error` debug logs from `useSales.js` and `SaleNew.jsx` that were left over from create_sale RPC debugging.
 - **.gitignore cleanup**: Added `consoleError.txt`, `supabeError.txt`, `supabaseError.txt` to .gitignore and removed from repo.
 - **Dead code removal**: Removed `Purchases.jsx` and `PurchaseNew.jsx` pages (Stock In was merged into Inventory).
+- **Lazy loading + Error Boundary**: App.jsx uses `React.lazy()` + `Suspense` for all page imports. `ErrorBoundary` wraps each route. `PageSuspense` component combines both.
+- **Modal focus trap**: `Modal.jsx` now traps keyboard focus within the dialog (Tab/Shift+Tab cycles through focusable elements). Close button has `aria-label`.
+- **useDashboard fixes**: Low stock count now computed client-side (`stock_quantity <= reorder_level`) instead of relying on Supabase `.filter()` which doesn't work with column references. Low stock products list also filtered client-side. Top products query rewritten to go through `sales` → `sale_items` join for correct aggregation.
+- **Sales trend empty state**: Dashboard shows "No sales data this month" message instead of rendering an empty chart.
+
+### Phase 16 — Delivery Feature ✓
+- **Schema**: `migration_delivery.sql` adds `delivery_address TEXT` and `delivery_fee DECIMAL(12,2)` columns to `sales` table. Updated `create_sale` RPC accepts `p_delivery_address` and `p_delivery_fee` params; total calculation includes delivery fee: `subtotal - discount + delivery_fee`.
+- **useSales.js**: `createSale(...)` now passes `deliveryAddress` and `deliveryFee` to the RPC.
+- **SaleNew.jsx — Customer Autocomplete**: Replaced the old customer dropdown (long list of all customers) with a **simple autocomplete text input**. Type a name → matching existing customers appear as suggestions (max 5). Select a suggestion → shows "✓ Name selected" with a clear button (✕). Not in the list? Just type the name and it auto-creates the customer on sale submission.
+- **SaleNew.jsx — Delivery Toggle**: Toggle in Order Summary sidebar enables delivery mode. When ON:
+  - Phone Number field appears (only if no existing customer selected — they already have phone on file)
+  - Delivery Address textarea (required)
+  - Delivery Fee input (optional, added to total)
+  - If an existing customer is selected, address auto-fills from their record
+- **SaleNew.jsx — Auto-Customer Creation**: `executeSale()` creates the customer on-the-fly if a name was typed but not selected from suggestions. Checks for existing match by name first, otherwise inserts a new customer record with name, phone, and address.
+- **Sales.jsx — Deliveries Tab**: New "All Sales" / "Deliveries" tabs. Deliveries tab shows delivery orders as cards with invoice number, customer name, delivery address (📍 icon), total, delivery fee notation, and date. Badge shows delivery count.
+- **SaleDetail.jsx — Delivery Info**: Shows delivery fee line in the totals (blue text) and a blue delivery address card with location pin icon when a delivery address is present.
+- **Bug fixes**: Fixed `isDelivery` not defined in `executeSale` scope. Fixed delivery toggle handler referencing old variable names (`setNewCustomerName`, `setNewCustomerPhone`, `customerId`) after customer autocomplete simplification. Replaced fragile `deliveryAddress !== ''` check with proper `deliveryEnabled` boolean state to prevent delivery section from collapsing when clearing the address textarea.
+- **DB migration required**: Run `supabase/migration_delivery.sql` in Supabase SQL Editor.
 
 ---
 
@@ -457,6 +482,10 @@ touchstone-builders/
 9. **Auto-SKU from category** — Non-tech users don't understand SKUs. Auto-generating from category abbreviation + sequence number (CMT-001) removes this burden while keeping codes meaningful.
 
 10. **Cost flows from delivery receipt** — The product's cost price is auto-set from the delivery receipt's unit cost. No separate "cost" field needed — the delivery receipt IS the source of truth.
+
+11. **Customer autocomplete over dropdown** — A text input with suggestion matching is more scalable than a dropdown listing all customers. For stores with many customers, the dropdown becomes unwieldy. The autocomplete gracefully handles both existing and new customers.
+
+12. **Delivery as optional add-on** — Delivery is toggled per-sale rather than being a separate order type. This keeps the sale flow simple while supporting the common hardware store pattern of "buy now, deliver later."
 
 ---
 
@@ -489,6 +518,7 @@ npm run preview
 5. Run `supabase/migration_stock_adjustments.sql` (for inventory adjustments)
 6. Run `supabase/migration_inventory_delete.sql` (for delete + reverse-stock triggers)
 7. Run `supabase/migration_fix_create_sale.sql` (fixes ambiguous column reference in create_sale RPC)
+8. Run `supabase/migration_delivery.sql` (adds delivery support to sales)
 
 ### First Admin User
 

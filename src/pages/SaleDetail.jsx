@@ -107,6 +107,24 @@ export default function SaleDetail() {
                   <span>-{peso(sale.discount)}</span>
                 </div>
               )}
+              {Number(sale.delivery_fee) > 0 && (
+                <div className="flex justify-between text-blue-600">
+                  <span>Delivery Fee</span>
+                  <span>+{peso(sale.delivery_fee)}</span>
+                </div>
+              )}
+              {sale.delivery_address && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                  <p className="text-xs font-semibold text-blue-700 mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 inline mr-1">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                    </svg>
+                    Delivery Address
+                  </p>
+                  <p className="text-sm text-blue-800">{sale.delivery_address}</p>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-lg pt-2 border-t border-base-200">
                 <span>Total</span>
                 <span className="text-primary">{peso(sale.total)}</span>

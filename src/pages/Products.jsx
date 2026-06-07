@@ -9,12 +9,10 @@ import Modal from '../components/ui/Modal'
 import ConfirmModal from '../components/ui/ConfirmModal'
 import { createColumnHelper } from '@tanstack/react-table'
 
-const units = ['pcs', 'kg', 'sack', 'meter', 'liter', 'sheet', 'box', 'pack', 'set', 'gallon', 'roll', 'bd.ft', 'cu.m', 'pair']
-
-const emptyForm = { sku: '', name: '', description: '', category_id: '', unit: 'pcs', price: '', cost: '', stock_quantity: '0', reorder_level: '0', image_url: '' }
+const emptyForm = { name: '', description: '', category_id: '', unit: 'pcs', price: '', cost: '', stock_quantity: '0', reorder_level: '0' }
 
 export default function Products() {
-  const { products, loading, error: loadError, createProduct, updateProduct, deleteProduct } = useProducts()
+  const { products, loading, error: loadError, updateProduct, deleteProduct } = useProducts()
   const { categories } = useCategories()
   const { isAdmin } = useAuth()
 
@@ -28,17 +26,9 @@ export default function Products() {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const { addToast } = useToast()
 
-  function openCreate() {
-    setEditing(null)
-    setForm(emptyForm)
-    setError('')
-    setModalOpen(true)
-  }
-
   function openEdit(product) {
     setEditing(product)
     setForm({
-      sku: product.sku,
       name: product.name,
       description: product.description || '',
       category_id: product.category_id?.toString() || '',
@@ -47,7 +37,6 @@ export default function Products() {
       cost: String(product.cost ?? ''),
       stock_quantity: String(product.stock_quantity ?? '0'),
       reorder_level: String(product.reorder_level ?? '0'),
-      image_url: product.image_url || '',
     })
     setError('')
     setModalOpen(true)
@@ -72,11 +61,9 @@ export default function Products() {
       }
       if (editing) {
         await updateProduct(editing.id, payload)
-      } else {
-        await createProduct(payload)
       }
       setModalOpen(false)
-      addToast(editing ? 'Product updated successfully' : 'Product created successfully')
+      addToast('Product updated successfully')
     } catch (err) {
       setError(err.message || 'Failed to save product')
     } finally {
@@ -157,7 +144,7 @@ export default function Products() {
               <option value="">All categories</option>
               {categories.map((c) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
             </select>
-            {isAdmin && <button className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" onClick={openCreate}>+ Add Product</button>}
+
           </>
         }
       />
@@ -176,27 +163,22 @@ export default function Products() {
         </div>
       )}
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Product' : 'Add Product'}>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Edit Product">
         <form onSubmit={handleSave} className="flex flex-col gap-3">
           {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg">{error}</div>}
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
-              <span className="label-text text-sm font-medium text-slate-700">SKU</span>
-              <input id="prod-sku" name="sku" className="input input-bordered input-sm" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} required />
+              <span className="label-text text-sm font-medium text-slate-700">Name</span>
+              <input id="prod-name" name="name" className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
             </label>
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">Unit</span>
               <select id="prod-unit" name="unit" className="select select-bordered select-sm" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}>
-                {units.map((u) => <option key={u} value={u}>{u}</option>)}
+                {['pcs', 'kg', 'sack', 'meter', 'liter', 'sheet', 'box', 'pack', 'set', 'gallon', 'roll', 'bd.ft', 'cu.m', 'pair'].map((u) => <option key={u} value={u}>{u}</option>)}
               </select>
             </label>
           </div>
-
-          <label className="form-control">
-            <span className="label-text text-sm font-medium text-slate-700">Name</span>
-            <input id="prod-name" name="name" className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-          </label>
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Description</span>
@@ -212,8 +194,8 @@ export default function Products() {
               </select>
             </label>
             <label className="form-control">
-              <span className="label-text text-sm font-medium text-slate-700">Image URL</span>
-              <input id="prod-image" name="image_url" className="input input-bordered input-sm" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+              <span className="label-text text-sm font-medium text-slate-700">Reorder Level</span>
+              <input id="prod-reorder" name="reorder_level" type="number" step="1" min="0" className="input input-bordered input-sm" value={form.reorder_level} onChange={(e) => setForm({ ...form, reorder_level: e.target.value })} />
             </label>
           </div>
 
@@ -228,21 +210,10 @@ export default function Products() {
             </label>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <label className="form-control">
-              <span className="label-text text-sm font-medium text-slate-700">Stock Quantity</span>
-              <input id="prod-stock" name="stock_quantity" type="number" step="1" min="0" className="input input-bordered input-sm" value={form.stock_quantity} onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })} />
-            </label>
-            <label className="form-control">
-              <span className="label-text text-sm font-medium text-slate-700">Reorder Level</span>
-              <input id="prod-reorder" name="reorder_level" type="number" step="1" min="0" className="input input-bordered input-sm" value={form.reorder_level} onChange={(e) => setForm({ ...form, reorder_level: e.target.value })} />
-            </label>
-          </div>
-
           <div className="flex justify-end gap-2 mt-2">
             <button type="button" className="btn btn-ghost btn-sm text-slate-600" onClick={() => setModalOpen(false)}>Cancel</button>
             <button type="submit" className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" disabled={saving}>
-              {saving ? <span className="loading loading-spinner loading-xs" /> : editing ? 'Update' : 'Create'}
+              {saving ? <span className="loading loading-spinner loading-xs" /> : 'Update'}
             </button>
           </div>
         </form>

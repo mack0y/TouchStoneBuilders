@@ -85,7 +85,7 @@ export function useSale(id) {
   return { sale, loading, error, refetch: fetchSale }
 }
 
-export async function createSale({ customerId, discount, items }) {
+export async function createSale({ customerId, discount, items, deliveryAddress, deliveryFee }) {
   const payload = {
     p_customer_id: customerId || null,
     p_discount: discount || 0,
@@ -94,6 +94,8 @@ export async function createSale({ customerId, discount, items }) {
       quantity: it.quantity,
       unit_price: it.unit_price,
     })),
+    p_delivery_address: deliveryAddress || null,
+    p_delivery_fee: deliveryFee || 0,
   }
   const { data, error } = await supabase.rpc('create_sale', payload)
   if (error) throw error

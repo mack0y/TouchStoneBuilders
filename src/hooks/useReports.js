@@ -3,10 +3,11 @@ import { supabase } from '../lib/supabaseClient'
 
 const TZ_OFFSET = '+08:00'
 
-export function useReports({ startDate, endDate } = {}) {
-  const [salesReport, setSalesReport] = useState(null)
-  const [inventoryReport, setInventoryReport] = useState(null)
-  const [profitReport, setProfitReport] = useState(null)
+export function useReports({ startDate, endDate, categoryFilter } = {}) {
+  const [dailySales, setDailySales] = useState(null)
+  const [salesByCategory, setSalesByCategory] = useState(null)
+  const [topProducts, setTopProducts] = useState(null)
+  const [salesByCustomer, setSalesByCustomer] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const mountedRef = useRef(true)
@@ -15,16 +16,17 @@ export function useReports({ startDate, endDate } = {}) {
     mountedRef.current = true
     fetchAll()
     return () => { mountedRef.current = false }
-  }, [startDate, endDate])
+  }, [startDate, endDate, categoryFilter])
 
   async function fetchAll() {
     setLoading(true)
     setError(null)
     try {
       await Promise.all([
-        fetchSalesReport(),
-        fetchInventoryReport(),
-        fetchProfitReport(),
+        fetchDailySales(),
+        fetchSalesByCategory(),
+        fetchTopProducts(),
+        fetchSalesByCustomer(),
       ])
     } catch (err) {
       if (mountedRef.current) setError(err.message)
@@ -33,150 +35,224 @@ export function useReports({ startDate, endDate } = {}) {
     }
   }
 
-  async function fetchSalesReport() {
+  async function fetchDailySales() {
     let query = supabase
       .from('sales')
-      .select('id, total, discount, subtotal, created_at, sale_items(quantity, products(cost))')
+      .select(`
+        id, invoice_no, total, discount, subtotal, created_at,
+        customers(name),
+        sale_items(quantity, unit_price, products(name))
+      `)
+      .order('created_at', { ascending: false })
 
-    if (startDate) {
-      query = query.gte('created_at', `${startDate}T00:00:00${TZ_OFFSET}`)
-    }
-    if (endDate) {
-      query = query.lte('created_at', `${endDate}T23:59:59${TZ_OFFSET}`)
-    }
+    if (startDate) query = query.gte('created_at', `${startDate}T00:00:00${TZ_OFFSET}`)
+    if (endDate) query = query.lte('created_at', `${endDate}T23:59:59${TZ_OFFSET}`)
 
-    const { data, error } = await query
-    if (error) throw error
+    const { data, error: err } = await query
+    if (err) throw err
 
-    const sales = data || []
-    const totalSales = sales.length
-    const totalRevenue = sales.reduce((sum, s) => sum + Number(s.total), 0)
-    const totalDiscount = sales.reduce((sum, s) => sum + Number(s.discount || 0), 0)
-    const totalItems = sales.reduce((sum, s) => sum + (s.sale_items?.reduce((s2, i) => s2 + Number(i.quantity), 0) || 0), 0)
-    const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0
+    const sales = (data || []).map(sale => {
+      const itemCount = (sale.sale_items || []).reduce((sum, i) => sum + Number(i.quantity), 0)
+      const customerName = Array.isArray(sale.customers) ? sale.customers[0]?.name : sale.customers?.name
+      return {
+        id: sale.id,
+        inv_no: sale.invoice_no,
+        total: Number(sale.total),
+        discount: Number(sale.discount || 0),
+        subtotal: Number(sale.subtotal || sale.total),
+        created_at: sale.created_at,
+        customer: customerName || 'Walk-in',
+        itemCount,
+      }
+    })
+
+    const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0)
+    const totalDiscount = sales.reduce((sum, s) => sum + s.discount, 0)
+    const totalItems = sales.reduce((sum, s) => sum + s.itemCount, 0)
+    const avgOrderValue = sales.length > 0 ? totalRevenue / sales.length : 0
 
     if (!mountedRef.current) return
-    setSalesReport({
-      totalSales,
+    setDailySales({
+      sales,
       totalRevenue,
       totalDiscount,
+      totalSalesCount: sales.length,
       totalItems,
       avgOrderValue,
     })
   }
 
-  async function fetchInventoryReport() {
-    const { data, error } = await supabase
-      .from('products')
-      .select('id, name, sku, stock_quantity, unit, price, cost, categories(name)')
-      .order('name')
-
-    if (error) throw error
-
-    const products = data || []
-    const totalProducts = products.length
-    const totalStockValue = products.reduce((sum, p) => sum + Number(p.stock_quantity) * Number(p.price), 0)
-    const totalCostValue = products.reduce((sum, p) => sum + Number(p.stock_quantity) * Number(p.cost), 0)
-    const lowStockCount = products.filter(p => Number(p.stock_quantity) <= Number(p.reorder_level)).length
-    const outOfStockCount = products.filter(p => Number(p.stock_quantity) <= 0).length
-
-    if (!mountedRef.current) return
-    setInventoryReport({
-      totalProducts,
-      totalStockValue,
-      totalCostValue,
-      lowStockCount,
-      outOfStockCount,
-      products: products.map(p => ({
-        id: p.id,
-        name: p.name,
-        sku: p.sku,
-        category: p.categories?.name || '—',
-        stock: Number(p.stock_quantity),
-        unit: p.unit,
-        price: Number(p.price),
-        cost: Number(p.cost),
-        stockValue: Number(p.stock_quantity) * Number(p.price),
-        costValue: Number(p.stock_quantity) * Number(p.cost),
-      })),
-    })
-  }
-
-  async function fetchProfitReport() {
-    let salesQuery = supabase
+  async function fetchSalesByCategory() {
+    let query = supabase
       .from('sales')
-      .select('id, total, discount, subtotal, created_at, sale_items(quantity, unit_price, products(cost, name, sku))')
+      .select(`
+        id, invoice_no, total, created_at,
+        customers(name),
+        sale_items(quantity, unit_price, subtotal, products(name, sku, unit, categories(name)))
+      `)
+      .order('created_at', { ascending: false })
 
-    if (startDate) {
-      salesQuery = salesQuery.gte('created_at', `${startDate}T00:00:00${TZ_OFFSET}`)
-    }
-    if (endDate) {
-      salesQuery = salesQuery.lte('created_at', `${endDate}T23:59:59${TZ_OFFSET}`)
-    }
+    if (startDate) query = query.gte('created_at', `${startDate}T00:00:00${TZ_OFFSET}`)
+    if (endDate) query = query.lte('created_at', `${endDate}T23:59:59${TZ_OFFSET}`)
 
-    const { data: sales, error: salesError } = await salesQuery
-    if (salesError) throw salesError
+    const { data, error: err } = await query
+    if (err) throw err
 
-    let totalRevenue = 0
-    let totalCOGS = 0
-    let totalDiscount = 0
-    const productProfitMap = new Map()
+    const categoryMap = new Map()
+    let grandTotal = 0
 
-    ;(sales || []).forEach(sale => {
-      const saleTotal = Number(sale.total)
-      const saleDiscount = Number(sale.discount || 0)
-      totalRevenue += saleTotal
-      totalDiscount += saleDiscount
-
+    ;(data || []).forEach(sale => {
+      const customerName = Array.isArray(sale.customers) ? sale.customers[0]?.name : sale.customers?.name
       ;(sale.sale_items || []).forEach(item => {
         const qty = Number(item.quantity)
         const unitPrice = Number(item.unit_price)
-        const productCost = Number(item.products?.cost || 0)
-        const itemRevenue = qty * unitPrice
-        const itemCOGS = qty * productCost
+        const itemTotal = qty * unitPrice
+        const p = item.products
+        const catName = Array.isArray(p?.categories)
+          ? p.categories[0]?.name
+          : p?.categories?.name || 'Uncategorized'
 
-        totalCOGS += itemCOGS
+        // Apply category filter if set
+        if (categoryFilter && catName !== categoryFilter) return
 
-        const key = item.products?.id || item.products?.name
-        if (key) {
-          const existing = productProfitMap.get(key) || {
-            name: item.products?.name || 'Unknown',
-            sku: item.products?.sku || '',
-            revenue: 0,
-            cogs: 0,
-            qty: 0,
-          }
-          existing.revenue += itemRevenue
-          existing.cogs += itemCOGS
-          existing.qty += qty
-          productProfitMap.set(key, existing)
-        }
+        grandTotal += itemTotal
+        const existing = categoryMap.get(catName) || { name: catName, revenue: 0, qty: 0, products: [] }
+        existing.revenue += itemTotal
+        existing.qty += qty
+
+        // Add itemized product details
+        existing.products.push({
+          productName: p?.name || 'Unknown',
+          sku: p?.sku || '',
+          unit: p?.unit || 'pcs',
+          quantity: qty,
+          unitPrice: unitPrice,
+          subtotal: itemTotal,
+          invoiceNo: sale.invoice_no || `#${sale.id}`,
+          customer: customerName || 'Walk-in',
+          date: sale.created_at,
+        })
+
+        categoryMap.set(catName, existing)
       })
     })
 
-    const grossProfit = totalRevenue - totalCOGS
-    const profitMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0
-
-    const topProductsByProfit = Array.from(productProfitMap.values())
-      .map(p => ({ ...p, profit: p.revenue - p.cogs, margin: p.revenue > 0 ? ((p.revenue - p.cogs) / p.revenue) * 100 : 0 }))
-      .sort((a, b) => b.profit - a.profit)
-      .slice(0, 10)
+    const categories = Array.from(categoryMap.values())
+      .map(c => ({
+        ...c,
+        percentage: grandTotal > 0 ? (c.revenue / grandTotal) * 100 : 0,
+      }))
+      .sort((a, b) => b.revenue - a.revenue)
 
     if (!mountedRef.current) return
-    setProfitReport({
+    setSalesByCategory({
+      categories,
+      grandTotal,
+    })
+  }
+
+  async function fetchTopProducts() {
+    let query = supabase
+      .from('sales')
+      .select(`
+        sale_items(quantity, unit_price, products(name, sku, unit, cost, categories(name)))
+      `)
+
+    if (startDate) query = query.gte('created_at', `${startDate}T00:00:00${TZ_OFFSET}`)
+    if (endDate) query = query.lte('created_at', `${endDate}T23:59:59${TZ_OFFSET}`)
+
+    const { data, error: err } = await query
+    if (err) throw err
+
+    const productMap = new Map()
+
+    ;(data || []).forEach(sale => {
+      ;(sale.sale_items || []).forEach(item => {
+        const p = item.products
+        if (!p) return
+        const key = p.name
+        const qty = Number(item.quantity)
+        const unitPrice = Number(item.unit_price)
+        const cost = Number(p.cost || 0)
+        const catName = Array.isArray(p.categories) ? p.categories[0]?.name : p.categories?.name || '—'
+
+        const existing = productMap.get(key) || {
+          name: p.name,
+          sku: p.sku || '',
+          unit: p.unit || 'pcs',
+          category: catName,
+          totalQty: 0,
+          revenue: 0,
+          cogs: 0,
+        }
+        existing.totalQty += qty
+        existing.revenue += qty * unitPrice
+        existing.cogs += qty * cost
+        productMap.set(key, existing)
+      })
+    })
+
+    const products = Array.from(productMap.values())
+      .map(p => ({ ...p, profit: p.revenue - p.cogs }))
+      .sort((a, b) => b.totalQty - a.totalQty)
+
+    if (!mountedRef.current) return
+    setTopProducts({ products })
+  }
+
+  async function fetchSalesByCustomer() {
+    let query = supabase
+      .from('sales')
+      .select(`
+        id, total, created_at,
+        customers(id, name, phone)
+      `)
+
+    if (startDate) query = query.gte('created_at', `${startDate}T00:00:00${TZ_OFFSET}`)
+    if (endDate) query = query.lte('created_at', `${endDate}T23:59:59${TZ_OFFSET}`)
+
+    const { data, error: err } = await query
+    if (err) throw err
+
+    const customerMap = new Map()
+
+    ;(data || []).forEach(sale => {
+      const cust = Array.isArray(sale.customers) ? sale.customers[0] : sale.customers
+      const name = cust?.name || 'Walk-in'
+      const key = cust?.id || name
+
+      const existing = customerMap.get(key) || {
+        name,
+        phone: cust?.phone || '—',
+        salesCount: 0,
+        totalSpent: 0,
+      }
+      existing.salesCount += 1
+      existing.totalSpent += Number(sale.total)
+      customerMap.set(key, existing)
+    })
+
+    const customers = Array.from(customerMap.values())
+      .map(c => ({ ...c, avgOrder: c.salesCount > 0 ? c.totalSpent / c.salesCount : 0 }))
+      .sort((a, b) => b.totalSpent - a.totalSpent)
+
+    const totalRevenue = customers.reduce((sum, c) => sum + c.totalSpent, 0)
+    const uniqueCustomers = customers.filter(c => c.name !== 'Walk-in').length
+
+    if (!mountedRef.current) return
+    setSalesByCustomer({
+      customers,
       totalRevenue,
-      totalCOGS,
-      totalDiscount,
-      grossProfit,
-      profitMargin,
-      topProductsByProfit,
+      totalCustomers: customers.length,
+      uniqueCustomers,
     })
   }
 
   return {
-    salesReport,
-    inventoryReport,
-    profitReport,
+    dailySales,
+    salesByCategory,
+    topProducts,
+    salesByCustomer,
     loading,
     error,
     refetch: fetchAll,
