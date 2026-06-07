@@ -194,18 +194,21 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-1">
-                {recentSales.map((s) => (
+                {recentSales.map((s) => {
+                  const customerName = Array.isArray(s.customers) ? s.customers[0]?.name : s.customers?.name
+                  return (
                   <div key={s.id} className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-md hover:bg-slate-50 transition-colors">
                     <div className="min-w-0">
                       <p className="font-medium text-sm text-slate-800 truncate">{s.invoice_no}</p>
-                      <p className="text-xs text-slate-400">{s.customers?.name || 'Walk-in'}</p>
+                      <p className="text-xs text-slate-400">{customerName || 'Walk-in'}</p>
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-semibold text-sm text-slate-700">{peso(s.total)}</p>
                       <p className="text-[11px] text-slate-400">{dateFmt(s.created_at, { dateStyle: 'short', timeStyle: 'short' })}</p>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
@@ -220,11 +223,13 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-1">
-                {lowStockProducts.map((p) => (
+                {lowStockProducts.map((p) => {
+                  const categoryName = Array.isArray(p.categories) ? p.categories[0]?.name : p.categories?.name
+                  return (
                   <div key={p.id} className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-md hover:bg-slate-50 transition-colors">
                     <div className="min-w-0">
                       <p className="font-medium text-sm text-slate-800 truncate">{p.name}</p>
-                      <p className="text-xs text-slate-400">{p.sku} · {p.categories?.name || 'No category'}</p>
+                      <p className="text-xs text-slate-400">{p.sku} · {categoryName || 'No category'}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${Number(p.stock_quantity) <= 0 ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
@@ -232,7 +237,8 @@ export default function Dashboard() {
                       </span>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>

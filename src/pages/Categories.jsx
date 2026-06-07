@@ -128,12 +128,12 @@ export default function Categories() {
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Name</span>
-            <input className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <input id="cat-name" name="name" className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </label>
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Description</span>
-            <textarea className="textarea textarea-bordered textarea-sm" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <textarea id="cat-description" name="description" className="textarea textarea-bordered textarea-sm" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </label>
 
           <div className="flex justify-end gap-2 mt-2">

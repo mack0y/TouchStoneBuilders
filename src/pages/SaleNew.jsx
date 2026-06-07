@@ -135,7 +135,6 @@ export default function SaleNew() {
       setConfirmOpen(false)
       navigate(`/sales/${result.sale_id}`)
     } catch (err) {
-      console.error('Sale creation error:', err)
       const msg = err.message || err.details || 'Failed to create sale'
       setError(msg)
       savingRef.current = false
@@ -165,6 +164,8 @@ export default function SaleNew() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
                 <input
+                  id="sale-search"
+                  name="search"
                   type="search"
                   className="input input-bordered input-sm w-full pl-9"
                   placeholder="Search by name or SKU..."
@@ -295,6 +296,8 @@ export default function SaleNew() {
               <label className="form-control mb-4">
                 <span className="label-text text-xs font-medium">Customer</span>
                 <select
+                  id="sale-customer"
+                  name="customer_id"
                   className="select select-bordered select-sm mt-1"
                   value={customerId}
                   onChange={(e) => setCustomerId(e.target.value)}
@@ -322,6 +325,8 @@ export default function SaleNew() {
                 <label className="form-control">
                   <span className="label-text text-xs font-medium">Discount (₱)</span>
                   <input
+                    id="sale-discount"
+                    name="discount"
                     type="number"
                     step="1"
                     min="0"

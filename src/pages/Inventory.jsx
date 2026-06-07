@@ -490,7 +490,7 @@ export default function Inventory() {
                           </div>
                         ) : (
                           <div className="relative mt-1">
-                            <input type="text" className="input input-bordered w-full text-sm" placeholder="Type to search products..." value={productSearch} onChange={(e) => { setProductSearch(e.target.value); setShowDropdown(true) }} onFocus={() => setShowDropdown(true)} onBlur={() => setTimeout(() => setShowDropdown(false), 200)} />
+                            <input id="inv-search" name="product_search" type="text" className="input input-bordered w-full text-sm" placeholder="Type to search products..." value={productSearch} onChange={(e) => { setProductSearch(e.target.value); setShowDropdown(true) }} onFocus={() => setShowDropdown(true)} onBlur={() => setTimeout(() => setShowDropdown(false), 200)} />
                             {showDropdown && (
                               <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                                 <button type="button" className="w-full text-left px-4 py-3 hover:bg-green-50 transition-colors border-b border-slate-100" onClick={() => { handleReceiveProductChange('__new__'); setProductSearch(''); setShowDropdown(false) }}>
@@ -539,13 +539,13 @@ export default function Inventory() {
                             <div className="space-y-3">
                               <label className="form-control">
                                 <span className="label-text text-sm font-medium text-slate-700">What's the product name?</span>
-                                <input type="text" className="input input-bordered mt-1 text-sm" placeholder="e.g. Portland Cement 40kg" value={newProduct.name} onChange={(e) => updateNewProduct('name', e.target.value)} />
+                                <input id="inv-new-name" name="new_product_name" type="text" className="input input-bordered mt-1 text-sm" placeholder="e.g. Portland Cement 40kg" value={newProduct.name} onChange={(e) => updateNewProduct('name', e.target.value)} />
                                 <span className="text-xs text-slate-400 mt-1">Type the name exactly as it appears on the delivery receipt</span>
                               </label>
 
                               <label className="form-control">
                                 <span className="label-text text-sm font-medium text-slate-700">What category?</span>
-                                <select className="select select-bordered mt-1 text-sm" value={newProduct.category_id} onChange={(e) => handleCategorySelect(e.target.value)}>
+                                <select id="inv-new-category" name="new_category_id" className="select select-bordered mt-1 text-sm" value={newProduct.category_id} onChange={(e) => handleCategorySelect(e.target.value)}>
                                   <option value="">Choose a category...</option>
                                   {categories.map((c) => (
                                     <option key={c.id} value={String(c.id)}>{c.name}</option>
@@ -557,13 +557,13 @@ export default function Inventory() {
                               {isNewCategory && (
                                 <label className="form-control">
                                   <span className="label-text text-sm font-medium text-slate-700">What's the new category name?</span>
-                                  <input type="text" className="input input-bordered mt-1 text-sm" placeholder="e.g. Safety Equipment" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} />
+                                  <input id="inv-new-cat-name" name="new_category_name" type="text" className="input input-bordered mt-1 text-sm" placeholder="e.g. Safety Equipment" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} />
                                 </label>
                               )}
 
                               <label className="form-control">
                                 <span className="label-text text-sm font-medium text-slate-700">How is it counted?</span>
-                                <select className="select select-bordered mt-1 text-sm" value={newProduct.unit} onChange={(e) => updateNewProduct('unit', e.target.value)}>
+                                <select id="inv-new-unit" name="new_unit" className="select select-bordered mt-1 text-sm" value={newProduct.unit} onChange={(e) => updateNewProduct('unit', e.target.value)}>
                                   {units.map((u) => <option key={u.value} value={u.value}>{u.label} ({u.value})</option>)}
                                 </select>
                                 <span className="text-xs text-slate-400 mt-1">Choose the unit that matches the delivery receipt</span>
@@ -602,7 +602,7 @@ export default function Inventory() {
                               <div className="space-y-3">
                                 <label className="form-control">
                                   <span className="label-text text-sm font-medium text-slate-700">Selling Price (₱) — What your customers pay</span>
-                                  <input type="number" step="1" min="0" className="input input-bordered input-sm mt-1 text-sm" placeholder="0.00" value={newProduct.price} onChange={(e) => setNewProduct((prev) => ({ ...prev, price: e.target.value, skipPrice: false }))} disabled={newProduct.skipPrice} />
+                                  <input id="inv-new-price" name="new_price" type="number" step="1" min="0" className="input input-bordered input-sm mt-1 text-sm" placeholder="0.00" value={newProduct.price} onChange={(e) => setNewProduct((prev) => ({ ...prev, price: e.target.value, skipPrice: false }))} disabled={newProduct.skipPrice} />
                                 </label>
                                 <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer hover:text-slate-700">
                                   <input type="checkbox" className="checkbox checkbox-xs border-slate-300" checked={newProduct.skipPrice} onChange={(e) => setNewProduct((prev) => ({ ...prev, skipPrice: e.target.checked, price: e.target.checked ? '' : prev.price }))} />
@@ -610,7 +610,7 @@ export default function Inventory() {
                                 </label>
                                 <label className="form-control">
                                   <span className="label-text text-sm font-medium text-slate-700">Alert me when stock falls below this number</span>
-                                  <input type="number" step="1" min="0" className="input input-bordered input-sm mt-1 text-sm" placeholder="0 (skip for now)" value={newProduct.reorder_level} onChange={(e) => setNewProduct((prev) => ({ ...prev, reorder_level: e.target.value, skipReorder: false }))} disabled={newProduct.skipReorder} />
+                                  <input id="inv-new-reorder" name="new_reorder_level" type="number" step="1" min="0" className="input input-bordered input-sm mt-1 text-sm" placeholder="0 (skip for now)" value={newProduct.reorder_level} onChange={(e) => setNewProduct((prev) => ({ ...prev, reorder_level: e.target.value, skipReorder: false }))} disabled={newProduct.skipReorder} />
                                   <span className="text-xs text-slate-400 mt-1">Optional. You can set this later from Stock Levels.</span>
                                 </label>
                                 {newProduct.skipPrice && (
@@ -624,7 +624,7 @@ export default function Inventory() {
                               <div className="grid grid-cols-2 gap-3">
                                 <label className="form-control">
                                   <span className="label-text text-sm font-medium text-slate-700">How many did you receive? *</span>
-                                  <input type="number" step="1" min="1" className="input input-bordered mt-1 text-sm" placeholder="e.g. 50" value={receiveForm.quantity} onChange={(e) => setReceiveForm({ ...receiveForm, quantity: e.target.value })} />
+                                  <input id="inv-new-qty2" name="new_quantity2" type="number" step="1" min="1" className="input input-bordered mt-1 text-sm" placeholder="e.g. 50" value={receiveForm.quantity} onChange={(e) => setReceiveForm({ ...receiveForm, quantity: e.target.value })} />
                                 </label>
                                 <label className="form-control">
                                   <span className="label-text text-sm font-medium text-slate-700">Cost per piece from supplier (₱) *</span>
@@ -635,7 +635,7 @@ export default function Inventory() {
 
                               <label className="form-control">
                                 <span className="label-text text-sm font-medium text-slate-700">Who delivered it? (optional)</span>
-                                <select className="select select-bordered mt-1 text-sm" value={receiveForm.supplier_id} onChange={(e) => {
+                                <select id="inv-new-supplier" name="new_supplier_id" className="select select-bordered mt-1 text-sm" value={receiveForm.supplier_id} onChange={(e) => {
                                   if (e.target.value === '__new__') {
                                     setIsNewSupplier(true)
                                     setReceiveForm({ ...receiveForm, supplier_id: '__new__' })
@@ -658,9 +658,9 @@ export default function Inventory() {
                                     <p className="text-xs font-semibold text-slate-600">New Supplier</p>
                                     <button type="button" className="btn btn-ghost btn-xs text-slate-400" onClick={() => { setIsNewSupplier(false); setNewSupplierName(''); setNewSupplierContact(''); setNewSupplierPhone(''); setReceiveForm({ ...receiveForm, supplier_id: '' }) }}>✕</button>
                                   </div>
-                                  <input type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Supplier name (required)" value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} />
-                                  <input type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Contact person (optional)" value={newSupplierContact} onChange={(e) => setNewSupplierContact(e.target.value)} />
-                                  <input type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Phone number (optional)" value={newSupplierPhone} onChange={(e) => setNewSupplierPhone(e.target.value)} />
+                                  <input id="inv-new-sup-name" name="new_supplier_name" type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Supplier name (required)" value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} />
+                                  <input id="inv-new-sup-contact" name="new_supplier_contact" type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Contact person (optional)" value={newSupplierContact} onChange={(e) => setNewSupplierContact(e.target.value)} />
+                                  <input id="inv-new-sup-phone" name="new_supplier_phone" type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Phone number (optional)" value={newSupplierPhone} onChange={(e) => setNewSupplierPhone(e.target.value)} />
                                 </div>
                               )}
 
@@ -691,16 +691,16 @@ export default function Inventory() {
                           <div className="grid grid-cols-2 gap-4">
                             <label className="form-control">
                               <span className="label-text font-medium text-slate-700">How many did you receive? *</span>
-                              <input type="number" step="1" min="1" className="input input-bordered mt-1 text-sm" placeholder="e.g. 50" value={receiveForm.quantity} onChange={(e) => setReceiveForm({ ...receiveForm, quantity: e.target.value })} required />
+                              <input id="inv-qty" name="quantity" type="number" step="1" min="1" className="input input-bordered mt-1 text-sm" placeholder="e.g. 50" value={receiveForm.quantity} onChange={(e) => setReceiveForm({ ...receiveForm, quantity: e.target.value })} required />
                             </label>
                             <label className="form-control">
                               <span className="label-text font-medium text-slate-700">How much per piece? (₱) *</span>
-                              <input type="number" step="1" min="0" className="input input-bordered mt-1 text-sm" placeholder="0.00" value={receiveForm.unit_cost} onChange={(e) => setReceiveForm({ ...receiveForm, unit_cost: e.target.value })} required />
+                              <input id="inv-cost" name="unit_cost" type="number" step="1" min="0" className="input input-bordered mt-1 text-sm" placeholder="0.00" value={receiveForm.unit_cost} onChange={(e) => setReceiveForm({ ...receiveForm, unit_cost: e.target.value })} required />
                             </label>
                           </div>
                           <label className="form-control">
                             <span className="label-text font-medium text-slate-700">Who delivered it?</span>
-                            <select className="select select-bordered mt-1 text-sm" value={receiveForm.supplier_id} onChange={(e) => {
+                            <select id="inv-supplier" name="supplier_id" className="select select-bordered mt-1 text-sm" value={receiveForm.supplier_id} onChange={(e) => {
                               if (e.target.value === '__new__') {
                                 setIsNewSupplier(true)
                                 setReceiveForm({ ...receiveForm, supplier_id: '__new__' })
@@ -723,9 +723,9 @@ export default function Inventory() {
                                 <p className="text-xs font-semibold text-slate-600">New Supplier</p>
                                 <button type="button" className="btn btn-ghost btn-xs text-slate-400" onClick={() => { setIsNewSupplier(false); setNewSupplierName(''); setNewSupplierContact(''); setNewSupplierPhone(''); setReceiveForm({ ...receiveForm, supplier_id: '' }) }}>✕</button>
                               </div>
-                              <input type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Supplier name (required)" value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} />
-                              <input type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Contact person (optional)" value={newSupplierContact} onChange={(e) => setNewSupplierContact(e.target.value)} />
-                              <input type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Phone number (optional)" value={newSupplierPhone} onChange={(e) => setNewSupplierPhone(e.target.value)} />
+                              <input id="inv-sup-name" name="supplier_name" type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Supplier name (required)" value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} />
+                              <input id="inv-sup-contact" name="supplier_contact" type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Contact person (optional)" value={newSupplierContact} onChange={(e) => setNewSupplierContact(e.target.value)} />
+                              <input id="inv-sup-phone" name="supplier_phone" type="text" className="input input-bordered input-sm w-full text-sm" placeholder="Phone number (optional)" value={newSupplierPhone} onChange={(e) => setNewSupplierPhone(e.target.value)} />
                             </div>
                           )}
                           {receiveForm.product_id && receiveForm.quantity && (
@@ -775,7 +775,7 @@ export default function Inventory() {
             {activeTab === 'stock' && (
               <div>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <select className="select select-bordered select-sm text-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+                  <select id="inv-category-filter" name="category_filter" className="select select-bordered select-sm text-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
                     <option value="">All categories</option>
                     {categories.map((c) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
                   </select>
@@ -800,19 +800,19 @@ export default function Inventory() {
                       {formError && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg">{formError}</div>}
                       <label className="form-control">
                         <span className="label-text font-medium text-slate-700">Which product?</span>
-                        <select className="select select-bordered mt-1 text-sm" value={adjustForm.product_id} onChange={(e) => setAdjustForm({ ...adjustForm, product_id: e.target.value })} required>
+                        <select id="inv-adjust-product" name="adjust_product_id" className="select select-bordered mt-1 text-sm" value={adjustForm.product_id} onChange={(e) => setAdjustForm({ ...adjustForm, product_id: e.target.value })} required>
                           <option value="">Choose a product...</option>
                           {products.map((p) => <option key={p.id} value={String(p.id)}>{p.name} ({p.sku}) — Stock: {Number(p.stock_quantity).toLocaleString()} {p.unit}</option>)}
                         </select>
                       </label>
                       <label className="form-control">
                         <span className="label-text font-medium text-slate-700">How much to add or remove? *</span>
-                        <input type="number" step="1" className="input input-bordered mt-1 text-sm" placeholder="Use + to add, - to remove" value={adjustForm.quantity_change} onChange={(e) => setAdjustForm({ ...adjustForm, quantity_change: e.target.value })} required />
+                        <input id="inv-adjust-qty" name="adjust_quantity_change" type="number" step="1" className="input input-bordered mt-1 text-sm" placeholder="Use + to add, - to remove" value={adjustForm.quantity_change} onChange={(e) => setAdjustForm({ ...adjustForm, quantity_change: e.target.value })} required />
                         <p className="text-xs text-slate-400 mt-1">Positive number = adding stock, negative = removing stock</p>
                       </label>
                       <label className="form-control">
                         <span className="label-text font-medium text-slate-700">Why are you adjusting? *</span>
-                        <textarea className="textarea textarea-bordered mt-1 text-sm" rows={2} placeholder="e.g. Physical count correction, Damaged goods, Returned items..." value={adjustForm.reason} onChange={(e) => setAdjustForm({ ...adjustForm, reason: e.target.value })} required />
+                        <textarea id="inv-adjust-reason" name="adjust_reason" className="textarea textarea-bordered mt-1 text-sm" rows={2} placeholder="e.g. Physical count correction, Damaged goods, Returned items..." value={adjustForm.reason} onChange={(e) => setAdjustForm({ ...adjustForm, reason: e.target.value })} required />
                       </label>
                       <button type="submit" className="btn bg-amber-500 hover:bg-amber-600 text-white border-none btn-lg shadow-md mt-2" disabled={saving}>
                         {saving ? <span className="loading loading-spinner loading-sm" /> : 'Apply Adjustment'}
@@ -887,10 +887,10 @@ export default function Inventory() {
         <form onSubmit={handleEditProduct} className="flex flex-col gap-3">
           {formError && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg">{formError}</div>}
           {(() => { const p = products.find((x) => x.id === Number(editForm.product_id)); return p ? (<div className="bg-slate-50 rounded-lg p-3 text-sm border border-slate-200"><p className="font-medium text-slate-800">{p.name}</p><p className="text-xs text-slate-400">{p.sku} · Stock: {Number(p.stock_quantity).toLocaleString()} {p.unit}</p></div>) : null })()}
-          <label className="form-control"><span className="label-text text-sm font-medium text-slate-700">Alert when stock falls below</span><input type="number" step="1" min="0" className="input input-bordered input-sm mt-1" value={editForm.reorder_level} onChange={(e) => setEditForm({ ...editForm, reorder_level: e.target.value })} required /></label>
+          <label className="form-control"><span className="label-text text-sm font-medium text-slate-700">Alert when stock falls below</span><input id="inv-edit-reorder" name="edit_reorder_level" type="number" step="1" min="0" className="input input-bordered input-sm mt-1" value={editForm.reorder_level} onChange={(e) => setEditForm({ ...editForm, reorder_level: e.target.value })} required /></label>
           <div className="grid grid-cols-2 gap-3">
-            <label className="form-control"><span className="label-text text-sm font-medium text-slate-700">Selling Price (₱)</span><input type="number" step="1" min="0" className="input input-bordered input-sm mt-1" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} required /></label>
-            <label className="form-control"><span className="label-text text-sm font-medium text-slate-700">Cost Price (₱)</span><input type="number" step="1" min="0" className="input input-bordered input-sm mt-1" value={editForm.cost} onChange={(e) => setEditForm({ ...editForm, cost: e.target.value })} required /></label>
+            <label className="form-control"><span className="label-text text-sm font-medium text-slate-700">Selling Price (₱)</span><input id="inv-edit-price" name="edit_price" type="number" step="1" min="0" className="input input-bordered input-sm mt-1" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} required /></label>
+            <label className="form-control"><span className="label-text text-sm font-medium text-slate-700">Cost Price (₱)</span><input id="inv-edit-cost" name="edit_cost" type="number" step="1" min="0" className="input input-bordered input-sm mt-1" value={editForm.cost} onChange={(e) => setEditForm({ ...editForm, cost: e.target.value })} required /></label>
           </div>
           <div className="flex justify-end gap-2 mt-2">
             <button type="button" className="btn btn-ghost btn-sm text-slate-600" onClick={() => setEditModalOpen(false)}>Cancel</button>

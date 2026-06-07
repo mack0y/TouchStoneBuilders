@@ -155,23 +155,23 @@ export default function Customers() {
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Name</span>
-            <input className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <input id="cust-name" name="name" className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </label>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">Phone</span>
-              <input type="tel" className="input input-bordered input-sm" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <input id="cust-phone" name="phone" type="tel" className="input input-bordered input-sm" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </label>
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">Email</span>
-              <input type="email" className="input input-bordered input-sm" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <input id="cust-email" name="email" type="email" className="input input-bordered input-sm" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </label>
           </div>
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Address</span>
-            <textarea className="textarea textarea-bordered textarea-sm" rows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+            <textarea id="cust-address" name="address" className="textarea textarea-bordered textarea-sm" rows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
           </label>
 
           <div className="flex justify-end gap-2 mt-2">

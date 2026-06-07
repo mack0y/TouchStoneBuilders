@@ -20,7 +20,7 @@ export function useInventory() {
   async function fetchAll() {
     setLoading(true)
     setError(null)
-
+    try {
     const [productsRes, purchasesRes, adjustmentsRes, suppliersRes, categoriesRes] = await Promise.all([
       supabase
         .from('products')
@@ -59,8 +59,11 @@ export function useInventory() {
     if (!adjustmentsRes.error) setAdjustments(adjustmentsRes.data || [])
     if (!suppliersRes.error) setSuppliers(suppliersRes.data || [])
     if (!categoriesRes.error) setCategories(categoriesRes.data || [])
-
-    setLoading(false)
+    } catch (err) {
+      if (mountedRef.current) setError(err.message)
+    } finally {
+      if (mountedRef.current) setLoading(false)
+    }
   }
 
   // ── Receive Stock (creates purchase record, auto-adds stock via trigger) ──

@@ -60,7 +60,7 @@ export function useDashboard() {
     const [
       { count: totalProducts },
       { data: allProducts },
-      { data: todaySales },
+      { count: todaySales },
       { data: todayRevenueData },
     ] = await Promise.all([
       supabase.from('products').select('*', { count: 'exact', head: true }),

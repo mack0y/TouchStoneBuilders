@@ -177,22 +177,22 @@ export default function Users() {
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Full Name</span>
-            <input className="input input-bordered input-sm" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
+            <input id="user-name" name="full_name" className="input input-bordered input-sm" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
           </label>
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Email</span>
-            <input type="email" className="input input-bordered input-sm" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+            <input id="user-email" name="email" type="email" className="input input-bordered input-sm" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
           </label>
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Password</span>
-            <input type="password" className="input input-bordered input-sm" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
+            <input id="user-password" name="password" type="password" className="input input-bordered input-sm" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
           </label>
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Role</span>
-            <select className="select select-bordered select-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+            <select id="user-role" name="role" className="select select-bordered select-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
               <option value="worker">Worker</option>
               <option value="admin">Admin</option>
             </select>

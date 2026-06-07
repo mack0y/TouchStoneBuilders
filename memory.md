@@ -287,6 +287,7 @@ touchstone-builders/
 - Sizing: use Tailwind's scale (`w-64` for 16rem). Use arbitrary values (`w-[4.5rem]`) only when scale doesn't support it
 - Avoid `w-18` — not in Tailwind v4 scale. Use `w-[4.5rem]` instead
 - Mobile-first responsive design with bottom nav bar for mobile users
+- All form fields must have `id` and `name` attributes for accessibility (browser warnings)
 
 ### Accessibility
 - Interactive elements must have `aria-label` if they use icon-only buttons
@@ -295,6 +296,7 @@ touchstone-builders/
 - Error/alert states need `role="alert"`
 - Sidebar should have `aria-label="Sidebar navigation"`
 - Use semantic HTML (`<main>`, `<nav>`, `<aside>`, `<header>`) where appropriate
+- All form fields (input, select, textarea) must have `id` and `name` attributes for label association
 
 ### Supabase
 - Client initialized from `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` env vars
@@ -423,6 +425,14 @@ touchstone-builders/
 - **Confirmation Dialogs**: all critical transactions (sales, stock receipt, stock adjustment) now show summary dialogs before execution. Delete operations use danger-styled confirm modals
 - **Number Input Step Fix**: arrow keys on price/quantity inputs now increment by ₱1/1 unit instead of ₱0.01/0.001
 - **create_sale RPC Fix**: renamed output parameters (`out_sale_id`, `out_inv_no`, `out_sale_total`) to avoid ambiguous column reference with `sales.invoice_no` in RETURNING clause. Added `DROP FUNCTION` to migration.
+
+### Phase 15 — Bug Fixes, Accessibility & Cleanup ✓
+- **Dashboard [object Object] Fix**: `todaySalesCount` was destructuring `{ data: todaySales }` (rows array) instead of `{ count: todaySales }` (number). `.toLocaleString()` on array of objects produced `[object Object],[object Object]`. Fixed to use `count` property.
+- **Accessibility (id/name attributes)**: Added `id` and `name` attributes to all form fields across 8 pages (Products, Categories, Customers, Suppliers, Users, SaleNew, Inventory, Sales). Browser accessibility warnings resolved.
+- **useInventory.js error handling**: Added `try/catch/finally` around `fetchAll()` Promise.all so errors from any query are caught and loading state is always reset.
+- **Debug log cleanup**: Removed `console.error` debug logs from `useSales.js` and `SaleNew.jsx` that were left over from create_sale RPC debugging.
+- **.gitignore cleanup**: Added `consoleError.txt`, `supabeError.txt`, `supabaseError.txt` to .gitignore and removed from repo.
+- **Dead code removal**: Removed `Purchases.jsx` and `PurchaseNew.jsx` pages (Stock In was merged into Inventory).
 
 ---
 

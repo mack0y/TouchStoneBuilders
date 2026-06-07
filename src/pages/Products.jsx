@@ -183,11 +183,11 @@ export default function Products() {
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">SKU</span>
-              <input className="input input-bordered input-sm" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} required />
+              <input id="prod-sku" name="sku" className="input input-bordered input-sm" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} required />
             </label>
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">Unit</span>
-              <select className="select select-bordered select-sm" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}>
+              <select id="prod-unit" name="unit" className="select select-bordered select-sm" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}>
                 {units.map((u) => <option key={u} value={u}>{u}</option>)}
               </select>
             </label>
@@ -195,47 +195,47 @@ export default function Products() {
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Name</span>
-            <input className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <input id="prod-name" name="name" className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </label>
 
           <label className="form-control">
             <span className="label-text text-sm font-medium text-slate-700">Description</span>
-            <textarea className="textarea textarea-bordered textarea-sm" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <textarea id="prod-description" name="description" className="textarea textarea-bordered textarea-sm" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </label>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">Category</span>
-              <select className="select select-bordered select-sm" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
+              <select id="prod-category" name="category_id" className="select select-bordered select-sm" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
                 <option value="">—</option>
                 {categories.map((c) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
               </select>
             </label>
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">Image URL</span>
-              <input className="input input-bordered input-sm" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+              <input id="prod-image" name="image_url" className="input input-bordered input-sm" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
             </label>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">Selling Price (₱)</span>
-              <input type="number" step="1" min="0" className="input input-bordered input-sm" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+              <input id="prod-price" name="price" type="number" step="1" min="0" className="input input-bordered input-sm" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
             </label>
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">Cost Price (₱)</span>
-              <input type="number" step="1" min="0" className="input input-bordered input-sm" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} required />
+              <input id="prod-cost" name="cost" type="number" step="1" min="0" className="input input-bordered input-sm" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} required />
             </label>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">Stock Quantity</span>
-              <input type="number" step="1" min="0" className="input input-bordered input-sm" value={form.stock_quantity} onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })} />
+              <input id="prod-stock" name="stock_quantity" type="number" step="1" min="0" className="input input-bordered input-sm" value={form.stock_quantity} onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })} />
             </label>
             <label className="form-control">
               <span className="label-text text-sm font-medium text-slate-700">Reorder Level</span>
-              <input type="number" step="1" min="0" className="input input-bordered input-sm" value={form.reorder_level} onChange={(e) => setForm({ ...form, reorder_level: e.target.value })} />
+              <input id="prod-reorder" name="reorder_level" type="number" step="1" min="0" className="input input-bordered input-sm" value={form.reorder_level} onChange={(e) => setForm({ ...form, reorder_level: e.target.value })} />
             </label>
           </div>
 
