@@ -34,24 +34,24 @@ export default function ConfirmModal({ open, onClose, onConfirm, title, message,
       aria-modal="true"
       aria-labelledby={title ? 'confirm-modal-title' : undefined}
     >
-      <div className="modal-box shadow-2xl border border-base-200/50 animate-scale-in">
+      <div className="modal-box border border-slate-200 shadow-lg bg-white animate-scale-in">
         {title && (
           <div className="flex items-center gap-3 mb-2">
             {danger && (
-              <div className="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-error"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-red-500"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
               </div>
             )}
-            <h3 id="confirm-modal-title" className="font-bold text-lg">{title}</h3>
+            <h3 id="confirm-modal-title" className="font-bold text-lg text-slate-800">{title}</h3>
           </div>
         )}
-        {message && <p className="py-3 text-sm text-base-content/60">{message}</p>}
+        {message && <p className="py-3 text-sm text-slate-500">{message}</p>}
         <div className="modal-action">
-          <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>{cancelLabel}</button>
+          <button type="button" className="btn btn-ghost btn-sm text-slate-600" onClick={onClose}>{cancelLabel}</button>
           <button
             ref={confirmBtnRef}
             type="button"
-            className={`btn btn-sm shadow-sm ${danger ? 'btn-error' : 'btn-primary'}`}
+            className={`btn btn-sm ${danger ? 'bg-red-600 hover:bg-red-700 text-white border-none' : 'bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none'}`}
             onClick={onConfirm}
           >
             {confirmLabel}

@@ -116,9 +116,9 @@ export default function Customers() {
       header: '',
       cell: (info) => (
         <div className="flex gap-1 justify-end">
-          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(info.row.original)}>Edit</button>
+          <button className="btn btn-ghost btn-xs text-slate-600" onClick={() => openEdit(info.row.original)}>Edit</button>
           {isAdmin && (
-            <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDelete(info.row.original)}>Del</button>
+            <button className="btn btn-ghost btn-xs text-red-500" onClick={() => handleDelete(info.row.original)}>Del</button>
           )}
         </div>
       ),
@@ -131,19 +131,19 @@ export default function Customers() {
         title="Customers"
         description={`${customers.length} customer${customers.length !== 1 ? 's' : ''} total`}
         actions={
-          <button className="btn btn-primary btn-sm" onClick={openCreate}>+ Add Customer</button>
+          <button className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" onClick={openCreate}>+ Add Customer</button>
         }
       />
 
       {(loadError || pageError) && (
-        <div className="alert alert-error text-sm mb-4" role="alert">{loadError || pageError}</div>
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4" role="alert">{loadError || pageError}</div>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
+        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-[#1e3a5f]"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-200/80 card-hover">
-          <div className="card-body p-3">
+        <div className="card-pro">
+          <div className="p-3">
             <DataTable columns={columns} data={customers} searchPlaceholder="Search customers..." />
           </div>
         </div>
@@ -151,32 +151,32 @@ export default function Customers() {
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Customer' : 'Add Customer'}>
         <form onSubmit={handleSave} className="flex flex-col gap-3">
-          {formError && <div className="alert alert-error text-sm py-2" role="alert">{formError}</div>}
+          {formError && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg" role="alert">{formError}</div>}
 
           <label className="form-control">
-            <span className="label-text">Name</span>
+            <span className="label-text text-sm font-medium text-slate-700">Name</span>
             <input className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </label>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
-              <span className="label-text">Phone</span>
+              <span className="label-text text-sm font-medium text-slate-700">Phone</span>
               <input type="tel" className="input input-bordered input-sm" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </label>
             <label className="form-control">
-              <span className="label-text">Email</span>
+              <span className="label-text text-sm font-medium text-slate-700">Email</span>
               <input type="email" className="input input-bordered input-sm" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </label>
           </div>
 
           <label className="form-control">
-            <span className="label-text">Address</span>
+            <span className="label-text text-sm font-medium text-slate-700">Address</span>
             <textarea className="textarea textarea-bordered textarea-sm" rows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
           </label>
 
           <div className="flex justify-end gap-2 mt-2">
-            <button type="button" className="btn btn-soft btn-sm" onClick={() => setModalOpen(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+            <button type="button" className="btn btn-ghost btn-sm text-slate-600" onClick={() => setModalOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" disabled={saving}>
               {saving ? <span className="loading loading-spinner loading-xs" /> : editing ? 'Update' : 'Create'}
             </button>
           </div>

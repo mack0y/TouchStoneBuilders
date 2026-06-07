@@ -127,7 +127,7 @@ export default function Products() {
         const qty = Number(info.getValue())
         const reorder = Number(info.row.original.reorder_level)
         return (
-          <span className={qty <= reorder ? 'text-error font-medium' : ''}>
+          <span className={qty <= reorder ? 'text-red-600 font-medium' : 'text-slate-700'}>
             {qty.toLocaleString()}
             {qty <= reorder && ' ⚠'}
           </span>
@@ -139,8 +139,8 @@ export default function Products() {
       header: '',
       cell: (info) => (
         <div className="flex gap-1 justify-end">
-          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(info.row.original)}>Edit</button>
-          <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDelete(info.row.original)}>Del</button>
+          <button className="btn btn-ghost btn-xs text-slate-600" onClick={() => openEdit(info.row.original)}>Edit</button>
+          <button className="btn btn-ghost btn-xs text-red-500" onClick={() => handleDelete(info.row.original)}>Del</button>
         </div>
       ),
     })] : []),
@@ -153,24 +153,24 @@ export default function Products() {
         description={`${products.length} product${products.length !== 1 ? 's' : ''} total`}
         actions={
           <>
-            <select className="select select-bordered select-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+            <select className="select select-bordered select-sm text-sm" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
               <option value="">All categories</option>
               {categories.map((c) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
             </select>
-            {isAdmin && <button className="btn btn-primary btn-sm" onClick={openCreate}>+ Add Product</button>}
+            {isAdmin && <button className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" onClick={openCreate}>+ Add Product</button>}
           </>
         }
       />
 
       {loadError && (
-        <div className="alert alert-error text-sm mb-4">{loadError}</div>
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4">{loadError}</div>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
+        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-[#1e3a5f]"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-200/80 card-hover">
-          <div className="card-body p-3">
+        <div className="card-pro">
+          <div className="p-3">
             <DataTable columns={columns} data={filtered} searchPlaceholder="Search products..." />
           </div>
         </div>
@@ -178,15 +178,15 @@ export default function Products() {
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Product' : 'Add Product'}>
         <form onSubmit={handleSave} className="flex flex-col gap-3">
-          {error && <div className="alert alert-error text-sm py-2">{error}</div>}
+          {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg">{error}</div>}
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
-              <span className="label-text">SKU</span>
+              <span className="label-text text-sm font-medium text-slate-700">SKU</span>
               <input className="input input-bordered input-sm" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} required />
             </label>
             <label className="form-control">
-              <span className="label-text">Unit</span>
+              <span className="label-text text-sm font-medium text-slate-700">Unit</span>
               <select className="select select-bordered select-sm" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}>
                 {units.map((u) => <option key={u} value={u}>{u}</option>)}
               </select>
@@ -194,54 +194,54 @@ export default function Products() {
           </div>
 
           <label className="form-control">
-            <span className="label-text">Name</span>
+            <span className="label-text text-sm font-medium text-slate-700">Name</span>
             <input className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </label>
 
           <label className="form-control">
-            <span className="label-text">Description</span>
+            <span className="label-text text-sm font-medium text-slate-700">Description</span>
             <textarea className="textarea textarea-bordered textarea-sm" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </label>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
-              <span className="label-text">Category</span>
+              <span className="label-text text-sm font-medium text-slate-700">Category</span>
               <select className="select select-bordered select-sm" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
                 <option value="">—</option>
                 {categories.map((c) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
               </select>
             </label>
             <label className="form-control">
-              <span className="label-text">Image URL</span>
+              <span className="label-text text-sm font-medium text-slate-700">Image URL</span>
               <input className="input input-bordered input-sm" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
             </label>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
-              <span className="label-text">Selling Price (₱)</span>
-              <input type="number" step="0.01" min="0" className="input input-bordered input-sm" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+              <span className="label-text text-sm font-medium text-slate-700">Selling Price (₱)</span>
+              <input type="number" step="1" min="0" className="input input-bordered input-sm" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
             </label>
             <label className="form-control">
-              <span className="label-text">Cost Price (₱)</span>
-              <input type="number" step="0.01" min="0" className="input input-bordered input-sm" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} required />
+              <span className="label-text text-sm font-medium text-slate-700">Cost Price (₱)</span>
+              <input type="number" step="1" min="0" className="input input-bordered input-sm" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} required />
             </label>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
-              <span className="label-text">Stock Quantity</span>
-              <input type="number" step="0.001" min="0" className="input input-bordered input-sm" value={form.stock_quantity} onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })} />
+              <span className="label-text text-sm font-medium text-slate-700">Stock Quantity</span>
+              <input type="number" step="1" min="0" className="input input-bordered input-sm" value={form.stock_quantity} onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })} />
             </label>
             <label className="form-control">
-              <span className="label-text">Reorder Level</span>
-              <input type="number" step="0.001" min="0" className="input input-bordered input-sm" value={form.reorder_level} onChange={(e) => setForm({ ...form, reorder_level: e.target.value })} />
+              <span className="label-text text-sm font-medium text-slate-700">Reorder Level</span>
+              <input type="number" step="1" min="0" className="input input-bordered input-sm" value={form.reorder_level} onChange={(e) => setForm({ ...form, reorder_level: e.target.value })} />
             </label>
           </div>
 
           <div className="flex justify-end gap-2 mt-2">
-            <button type="button" className="btn btn-soft btn-sm" onClick={() => setModalOpen(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+            <button type="button" className="btn btn-ghost btn-sm text-slate-600" onClick={() => setModalOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" disabled={saving}>
               {saving ? <span className="loading loading-spinner loading-xs" /> : editing ? 'Update' : 'Create'}
             </button>
           </div>

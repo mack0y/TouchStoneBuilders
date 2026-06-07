@@ -624,15 +624,15 @@ CREATE OR REPLACE FUNCTION create_sale(
 )
 RETURNS TABLE (
   sale_id BIGINT,
-  invoice_no TEXT,
-  total DECIMAL
+  inv_no TEXT,
+  sale_total DECIMAL
 )
 LANGUAGE plpgsql
 SECURITY INVOKER
 AS $$
 DECLARE
   v_sale_id BIGINT;
-  v_invoice_no TEXT;
+  v_inv_no TEXT;
   v_subtotal DECIMAL(12,2) := 0;
   v_total DECIMAL(12,2);
 BEGIN
@@ -652,7 +652,7 @@ BEGIN
 
   INSERT INTO sales (customer_id, user_id, subtotal, discount, total)
   VALUES (p_customer_id, auth.uid(), v_subtotal, COALESCE(p_discount, 0), v_total)
-  RETURNING id, invoice_no INTO v_sale_id, v_invoice_no;
+  RETURNING id, sales.invoice_no INTO v_sale_id, v_inv_no;
 
   INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal)
   SELECT
@@ -663,6 +663,6 @@ BEGIN
     (item->>'quantity')::DECIMAL * (item->>'unit_price')::DECIMAL
   FROM jsonb_array_elements(p_items) AS item;
 
-  RETURN QUERY SELECT v_sale_id, v_invoice_no, v_total;
+  RETURN QUERY SELECT v_sale_id, v_inv_no, v_total;
 END;
 $$;

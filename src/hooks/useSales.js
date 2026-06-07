@@ -96,8 +96,12 @@ export async function createSale({ customerId, discount, items }) {
     })),
   }
   const { data, error } = await supabase.rpc('create_sale', payload)
-  if (error) throw error
+  if (error) {
+    console.error('create_sale RPC error:', error)
+    console.error('create_sale payload:', JSON.stringify(payload))
+    throw error
+  }
   const row = data?.[0]
   if (!row) return null
-  return { sale_id: Number(row.sale_id), invoice_no: row.invoice_no, total: row.total }
+  return { sale_id: Number(row.sale_id), invoice_no: row.inv_no, total: row.sale_total }
 }

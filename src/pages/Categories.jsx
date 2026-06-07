@@ -91,8 +91,8 @@ export default function Categories() {
       header: '',
       cell: (info) => (
         <div className="flex gap-1 justify-end">
-          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(info.row.original)}>Edit</button>
-          <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDelete(info.row.original)}>Del</button>
+          <button className="btn btn-ghost btn-xs text-slate-600" onClick={() => openEdit(info.row.original)}>Edit</button>
+          <button className="btn btn-ghost btn-xs text-red-500" onClick={() => handleDelete(info.row.original)}>Del</button>
         </div>
       ),
     })] : []),
@@ -104,19 +104,19 @@ export default function Categories() {
         title="Categories"
         description={`${categories.length} categor${categories.length !== 1 ? 'ies' : 'y'}`}
         actions={
-          isAdmin && <button className="btn btn-primary btn-sm" onClick={openCreate}>+ Add Category</button>
+          isAdmin && <button className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" onClick={openCreate}>+ Add Category</button>
         }
       />
 
       {loadError && (
-        <div className="alert alert-error text-sm mb-4">{loadError}</div>
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4">{loadError}</div>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
+        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-[#1e3a5f]"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-200/80 card-hover">
-          <div className="card-body p-3">
+        <div className="card-pro">
+          <div className="p-3">
             <DataTable columns={columns} data={categories} searchPlaceholder="Search categories..." />
           </div>
         </div>
@@ -124,21 +124,21 @@ export default function Categories() {
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Category' : 'Add Category'}>
         <form onSubmit={handleSave} className="flex flex-col gap-3">
-          {error && <div className="alert alert-error text-sm py-2">{error}</div>}
+          {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg">{error}</div>}
 
           <label className="form-control">
-            <span className="label-text">Name</span>
+            <span className="label-text text-sm font-medium text-slate-700">Name</span>
             <input className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </label>
 
           <label className="form-control">
-            <span className="label-text">Description</span>
+            <span className="label-text text-sm font-medium text-slate-700">Description</span>
             <textarea className="textarea textarea-bordered textarea-sm" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </label>
 
           <div className="flex justify-end gap-2 mt-2">
-            <button type="button" className="btn btn-soft btn-sm" onClick={() => setModalOpen(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+            <button type="button" className="btn btn-ghost btn-sm text-slate-600" onClick={() => setModalOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" disabled={saving}>
               {saving ? <span className="loading loading-spinner loading-xs" /> : editing ? 'Update' : 'Create'}
             </button>
           </div>

@@ -418,6 +418,12 @@ touchstone-builders/
 - **Clear Price Labels**: "Selling Price — What your customers pay" vs "Cost per piece from supplier — What the supplier charges"
 - **Error Handling**: user-friendly messages for 403 Forbidden on category/supplier creation
 
+### Phase 14 — UI/UX Refinement & Bug Fixes ✓
+- **Professional UI Redesign**: navy (#1e3a5f) corporate theme, clean KPI cards with left accent borders, removed gradient/glass/bouncy effects, replaced emojis with SVG icons, consistent slate color palette
+- **Confirmation Dialogs**: all critical transactions (sales, stock receipt, stock adjustment) now show summary dialogs before execution. Delete operations use danger-styled confirm modals
+- **Number Input Step Fix**: arrow keys on price/quantity inputs now increment by ₱1/1 unit instead of ₱0.01/0.001
+- **create_sale RPC Fix**: renamed output parameters (`out_sale_id`, `out_inv_no`, `out_sale_total`) to avoid ambiguous column reference with `sales.invoice_no` in RETURNING clause. Added `DROP FUNCTION` to migration.
+
 ---
 
 ## Key Design Decisions & Rationale
@@ -472,6 +478,7 @@ npm run preview
 4. Run `supabase/migration_users.sql` (for user management features)
 5. Run `supabase/migration_stock_adjustments.sql` (for inventory adjustments)
 6. Run `supabase/migration_inventory_delete.sql` (for delete + reverse-stock triggers)
+7. Run `supabase/migration_fix_create_sale.sql` (fixes ambiguous column reference in create_sale RPC)
 
 ### First Admin User
 

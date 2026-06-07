@@ -102,7 +102,7 @@ export default function Users() {
       header: 'Role',
       enableSorting: true,
       cell: (info) => (
-        <span className={`badge badge-sm ${info.getValue() === 'admin' ? 'badge-primary' : 'badge-soft'}`}>
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${info.getValue() === 'admin' ? 'bg-[#1e3a5f] text-white' : 'bg-slate-100 text-slate-600'}`}>
           {info.getValue()}
         </span>
       ),
@@ -112,7 +112,7 @@ export default function Users() {
       header: 'Status',
       enableSorting: true,
       cell: (info) => (
-        <span className={`badge badge-sm ${info.getValue() ? 'badge-success' : 'badge-error'}`}>
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${info.getValue() ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
           {info.getValue() ? 'Active' : 'Inactive'}
         </span>
       ),
@@ -131,11 +131,11 @@ export default function Users() {
         return (
           <div className="flex gap-1 justify-end">
             {u.role === 'admin'
-              ? <button className="btn btn-ghost btn-xs" onClick={() => handleRoleChange(u, 'worker')} disabled={isSelf}>Demote</button>
-              : <button className="btn btn-ghost btn-xs" onClick={() => handleRoleChange(u, 'admin')} disabled={isSelf}>Promote</button>
+              ? <button className="btn btn-ghost btn-xs text-slate-600" onClick={() => handleRoleChange(u, 'worker')} disabled={isSelf}>Demote</button>
+              : <button className="btn btn-ghost btn-xs text-slate-600" onClick={() => handleRoleChange(u, 'admin')} disabled={isSelf}>Promote</button>
             }
             <button
-              className={`btn btn-ghost btn-xs ${(u.is_active ?? true) ? 'text-warning' : 'text-success'}`}
+              className={`btn btn-ghost btn-xs ${(u.is_active ?? true) ? 'text-amber-600' : 'text-green-600'}`}
               onClick={() => handleToggleActive(u)}
               disabled={isSelf}
             >
@@ -153,19 +153,19 @@ export default function Users() {
         title="Users"
         description={`${users.length} user${users.length !== 1 ? 's' : ''} total`}
         actions={
-          <button className="btn btn-primary btn-sm" onClick={openCreate}>+ Add User</button>
+          <button className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" onClick={openCreate}>+ Add User</button>
         }
       />
 
       {(loadError || error) && (
-        <div className="alert alert-error text-sm mb-4" role="alert">{loadError || error}</div>
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4" role="alert">{loadError || error}</div>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
+        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-[#1e3a5f]"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-200/80 card-hover">
-          <div className="card-body p-3">
+        <div className="card-pro">
+          <div className="p-3">
             <DataTable columns={columns} data={users} searchPlaceholder="Search users..." />
           </div>
         </div>
@@ -173,25 +173,25 @@ export default function Users() {
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add User">
         <form onSubmit={handleSave} className="flex flex-col gap-3">
-          {error && <div className="alert alert-error text-sm py-2" role="alert">{error}</div>}
+          {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg" role="alert">{error}</div>}
 
           <label className="form-control">
-            <span className="label-text">Full Name</span>
+            <span className="label-text text-sm font-medium text-slate-700">Full Name</span>
             <input className="input input-bordered input-sm" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
           </label>
 
           <label className="form-control">
-            <span className="label-text">Email</span>
+            <span className="label-text text-sm font-medium text-slate-700">Email</span>
             <input type="email" className="input input-bordered input-sm" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
           </label>
 
           <label className="form-control">
-            <span className="label-text">Password</span>
+            <span className="label-text text-sm font-medium text-slate-700">Password</span>
             <input type="password" className="input input-bordered input-sm" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
           </label>
 
           <label className="form-control">
-            <span className="label-text">Role</span>
+            <span className="label-text text-sm font-medium text-slate-700">Role</span>
             <select className="select select-bordered select-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
               <option value="worker">Worker</option>
               <option value="admin">Admin</option>
@@ -199,8 +199,8 @@ export default function Users() {
           </label>
 
           <div className="flex justify-end gap-2 mt-2">
-            <button type="button" className="btn btn-soft btn-sm" onClick={() => setModalOpen(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+            <button type="button" className="btn btn-ghost btn-sm text-slate-600" onClick={() => setModalOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" disabled={saving}>
               {saving ? <span className="loading loading-spinner loading-xs" /> : 'Create User'}
             </button>
           </div>

@@ -33,7 +33,7 @@ export default function Sales() {
       header: 'Invoice',
       enableSorting: false,
       cell: (info) => (
-        <Link to={`/sales/${info.row.original.id}`} className="link link-primary font-medium">
+        <Link to={`/sales/${info.row.original.id}`} className="text-[#1e3a5f] font-medium hover:underline">
           {info.row.original.invoice_no}
         </Link>
       ),
@@ -67,51 +67,51 @@ export default function Sales() {
         title="Sales"
         description={loading ? 'Loading...' : `${sales.length} sale${sales.length !== 1 ? 's' : ''} ${rangeText}`}
         actions={
-          <button className="btn btn-primary btn-sm" onClick={() => navigate('/sales/new')}>
+          <button className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" onClick={() => navigate('/sales/new')}>
             + New Sale
           </button>
         }
       />
 
-      <div className="card bg-base-100 border border-base-200/80 card-hover mb-4">
-        <div className="card-body p-3 flex-row items-end gap-3 flex-wrap">
+      <div className="card-pro mb-4">
+        <div className="p-3 flex-row items-end gap-3 flex-wrap flex">
           <label className="form-control" htmlFor="sales-from">
-            <span className="label-text text-xs">From</span>
+            <span className="label-text text-xs text-slate-500">From</span>
             <input
               id="sales-from"
               type="date"
-              className="input input-bordered input-sm"
+              className="input input-bordered input-sm text-sm"
               value={startDate}
               max={endDate || undefined}
               onChange={(e) => setStartDate(e.target.value)}
             />
           </label>
           <label className="form-control" htmlFor="sales-to">
-            <span className="label-text text-xs">To</span>
+            <span className="label-text text-xs text-slate-500">To</span>
             <input
               id="sales-to"
               type="date"
-              className="input input-bordered input-sm"
+              className="input input-bordered input-sm text-sm"
               value={endDate}
               min={startDate || undefined}
               onChange={(e) => setEndDate(e.target.value)}
             />
           </label>
           {(startDate || endDate) && (
-            <button className="btn btn-soft btn-sm" onClick={clearFilter}>Clear</button>
+            <button className="btn btn-ghost btn-sm text-slate-600" onClick={clearFilter}>Clear</button>
           )}
         </div>
       </div>
 
       {error && (
-        <div className="alert alert-error text-sm mb-4" role="alert">{error}</div>
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4" role="alert">{error}</div>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
+        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-[#1e3a5f]"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-200/80 card-hover">
-          <div className="card-body p-3">
+        <div className="card-pro">
+          <div className="p-3">
             <DataTable columns={columns} data={sales} searchPlaceholder="Search invoices..." />
           </div>
         </div>

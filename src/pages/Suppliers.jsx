@@ -118,8 +118,8 @@ export default function Suppliers() {
       header: '',
       cell: (info) => (
         <div className="flex gap-1 justify-end">
-          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(info.row.original)}>Edit</button>
-          <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDelete(info.row.original)}>Del</button>
+          <button className="btn btn-ghost btn-xs text-slate-600" onClick={() => openEdit(info.row.original)}>Edit</button>
+          <button className="btn btn-ghost btn-xs text-red-500" onClick={() => handleDelete(info.row.original)}>Del</button>
         </div>
       ),
     })] : []),
@@ -127,10 +127,10 @@ export default function Suppliers() {
 
   if (!isAdmin) {
     return (
-      <div className="card bg-base-100 border border-base-200/80 card-hover">
-        <div className="card-body items-center py-16 text-base-content/40">
-          <p className="text-lg font-medium">Access denied</p>
-          <p className="text-sm mt-1">You do not have permission to view this page.</p>
+      <div className="card-pro">
+        <div className="p-12 text-center">
+          <p className="text-lg font-medium text-slate-600">Access denied</p>
+          <p className="text-sm text-slate-400 mt-1">You do not have permission to view this page.</p>
         </div>
       </div>
     )
@@ -142,19 +142,19 @@ export default function Suppliers() {
         title="Suppliers"
         description={`${suppliers.length} supplier${suppliers.length !== 1 ? 's' : ''} total`}
         actions={
-          <button className="btn btn-primary btn-sm" onClick={openCreate}>+ Add Supplier</button>
+          <button className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" onClick={openCreate}>+ Add Supplier</button>
         }
       />
 
       {(loadError || pageError) && (
-        <div className="alert alert-error text-sm mb-4" role="alert">{loadError || pageError}</div>
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4" role="alert">{loadError || pageError}</div>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
+        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-[#1e3a5f]"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-200/80 card-hover">
-          <div className="card-body p-3">
+        <div className="card-pro">
+          <div className="p-3">
             <DataTable columns={columns} data={suppliers} searchPlaceholder="Search suppliers..." />
           </div>
         </div>
@@ -162,38 +162,38 @@ export default function Suppliers() {
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Supplier' : 'Add Supplier'}>
         <form onSubmit={handleSave} className="flex flex-col gap-3">
-          {formError && <div className="alert alert-error text-sm py-2" role="alert">{formError}</div>}
+          {formError && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg" role="alert">{formError}</div>}
 
           <label className="form-control">
-            <span className="label-text">Name</span>
+            <span className="label-text text-sm font-medium text-slate-700">Name</span>
             <input className="input input-bordered input-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </label>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
-              <span className="label-text">Contact Person</span>
+              <span className="label-text text-sm font-medium text-slate-700">Contact Person</span>
               <input className="input input-bordered input-sm" value={form.contact_person} onChange={(e) => setForm({ ...form, contact_person: e.target.value })} />
             </label>
             <label className="form-control">
-              <span className="label-text">Phone</span>
+              <span className="label-text text-sm font-medium text-slate-700">Phone</span>
               <input type="tel" className="input input-bordered input-sm" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </label>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="form-control">
-              <span className="label-text">Email</span>
+              <span className="label-text text-sm font-medium text-slate-700">Email</span>
               <input type="email" className="input input-bordered input-sm" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </label>
             <label className="form-control">
-              <span className="label-text">Address</span>
+              <span className="label-text text-sm font-medium text-slate-700">Address</span>
               <textarea className="textarea textarea-bordered textarea-sm" rows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
             </label>
           </div>
 
           <div className="flex justify-end gap-2 mt-2">
-            <button type="button" className="btn btn-soft btn-sm" onClick={() => setModalOpen(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+            <button type="button" className="btn btn-ghost btn-sm text-slate-600" onClick={() => setModalOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-sm bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none" disabled={saving}>
               {saving ? <span className="loading loading-spinner loading-xs" /> : editing ? 'Update' : 'Create'}
             </button>
           </div>

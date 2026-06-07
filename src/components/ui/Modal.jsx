@@ -59,9 +59,9 @@ export default function Modal({ open, onClose, title, children }) {
       aria-labelledby={title ? `${dialogId.current}-title` : undefined}
       aria-modal="true"
     >
-      <div className="modal-box max-w-lg shadow-2xl border border-base-200/50 p-6 animate-scale-in">
-        <button type="button" className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 text-base-content/40 hover:text-base-content" onClick={onClose} aria-label="Close">✕</button>
-        {title && <h3 id={`${dialogId.current}-title`} className="font-bold text-lg mb-4">{title}</h3>}
+      <div className="modal-box max-w-lg border border-slate-200 shadow-lg p-6 animate-scale-in bg-white">
+        <button type="button" className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 text-slate-400 hover:text-slate-600" onClick={onClose} aria-label="Close">✕</button>
+        {title && <h3 id={`${dialogId.current}-title`} className="font-bold text-lg text-slate-800 mb-4">{title}</h3>}
         {children}
       </div>
       <form method="dialog" className="modal-backdrop">

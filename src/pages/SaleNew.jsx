@@ -5,6 +5,7 @@ import { useCustomers } from '../hooks/useCustomers'
 import { createSale } from '../hooks/useSales'
 import { useToast } from '../hooks/useToast'
 import PageHeader from '../components/ui/PageHeader'
+import ConfirmModal from '../components/ui/ConfirmModal'
 import { peso } from '../lib/format'
 
 const round2 = (n) => Math.round(n * 100) / 100
@@ -20,6 +21,8 @@ export default function SaleNew() {
   const [cart, setCart] = useState([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [pendingSale, setPendingSale] = useState(null)
   const savingRef = useRef(false)
   const { addToast } = useToast()
 
@@ -98,25 +101,28 @@ export default function SaleNew() {
 
   async function handleConfirm() {
     if (savingRef.current) return
-    savingRef.current = true
     setError('')
     if (cart.length === 0) {
       setError('Add at least one item to the cart')
-      savingRef.current = false
       return
     }
     if (discountNum > subtotal) {
       setError('Discount cannot exceed subtotal')
-      savingRef.current = false
       return
     }
     const oversell = cart.find((it) => it.quantity > it.stock_quantity)
     if (oversell) {
       setError(`Insufficient stock for "${oversell.name}". Available: ${oversell.stock_quantity}`)
-      savingRef.current = false
       return
     }
+    const customerName = customers.find((c) => String(c.id) === customerId)?.name || 'Walk-in'
+    setPendingSale({ customerName })
+    setConfirmOpen(true)
+  }
 
+  async function executeSale() {
+    if (savingRef.current) return
+    savingRef.current = true
     setSaving(true)
     try {
       const result = await createSale({
@@ -126,9 +132,12 @@ export default function SaleNew() {
       })
       if (!result?.sale_id) throw new Error('Sale created but no ID returned')
       addToast('Sale created successfully')
+      setConfirmOpen(false)
       navigate(`/sales/${result.sale_id}`)
     } catch (err) {
-      setError(err.message || 'Failed to create sale')
+      console.error('Sale creation error:', err)
+      const msg = err.message || err.details || 'Failed to create sale'
+      setError(msg)
       savingRef.current = false
     } finally {
       setSaving(false)
@@ -243,8 +252,8 @@ export default function SaleNew() {
                             <td>
                               <input
                                 type="number"
-                                step="0.001"
-                                min="0.001"
+                                step="1"
+                                min="1"
                                 className={`input input-bordered input-xs w-24 ${oversell ? 'input-error' : ''}`}
                                 value={it.quantity}
                                 onChange={(e) => updateQty(it.product_id, parseFloat(e.target.value) || 0)}
@@ -314,7 +323,7 @@ export default function SaleNew() {
                   <span className="label-text text-xs font-medium">Discount (₱)</span>
                   <input
                     type="number"
-                    step="0.01"
+                    step="1"
                     min="0"
                     className="input input-bordered input-sm mt-1"
                     value={discount}
@@ -333,12 +342,58 @@ export default function SaleNew() {
 
               <button
                 type="button"
-                className="btn btn-primary w-full mt-4 shadow-md hover:shadow-lg transition-shadow"
+                className="btn bg-[#1e3a5f] hover:bg-[#0f2440] text-white border-none w-full mt-4"
                 onClick={handleConfirm}
                 disabled={saving || cart.length === 0}
               >
-                {saving ? <span className="loading loading-spinner loading-sm" /> : 'Confirm Sale'}
+                {saving ? <span className="loading loading-spinner loading-sm" /> : 'Review & Confirm Sale'}
               </button>
+
+              {/* Confirmation Dialog */}
+              <ConfirmModal
+                open={confirmOpen}
+                onClose={() => { setConfirmOpen(false); setPendingSale(null) }}
+                onConfirm={executeSale}
+                title="Confirm Sale"
+                confirmLabel={saving ? 'Processing...' : 'Yes, Confirm Sale'}
+              >
+                <div className="space-y-3">
+                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-slate-500">Customer</span>
+                      <span className="font-medium text-slate-800">{pendingSale?.customerName}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-slate-500">Items</span>
+                      <span className="font-medium text-slate-800">{cart.length}</span>
+                    </div>
+                    {discountNum > 0 && (
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-slate-500">Discount</span>
+                        <span className="font-medium text-amber-600">-{peso(discountNum)}</span>
+                      </div>
+                    )}
+                    <div className="border-t border-slate-200 mt-3 pt-3 flex justify-between">
+                      <span className="font-semibold text-slate-700">Total</span>
+                      <span className="font-bold text-lg text-[#1e3a5f]">{peso(total)}</span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    <p className="font-medium text-slate-500 mb-1">Items being sold:</p>
+                    <ul className="space-y-1">
+                      {cart.map((it) => (
+                        <li key={it.product_id} className="flex justify-between">
+                          <span>{it.name}</span>
+                          <span className="text-slate-500">{it.quantity} x {peso(it.unit_price)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                    Please verify all details are correct before confirming. This transaction cannot be undone.
+                  </p>
+                </div>
+              </ConfirmModal>
             </div>
           </div>
         </div>
