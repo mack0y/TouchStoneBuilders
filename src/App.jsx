@@ -54,7 +54,7 @@ function PageSuspense({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/TouchStoneBuilders">
       <AuthProvider>
         <ToastProvider>
           <Routes>
