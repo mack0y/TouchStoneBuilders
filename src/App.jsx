@@ -8,6 +8,11 @@ import NotFound from './pages/NotFound'
 import PlaceholderPage from './pages/PlaceholderPage'
 import Products from './pages/Products'
 import Categories from './pages/Categories'
+import Customers from './pages/Customers'
+import Suppliers from './pages/Suppliers'
+import Sales from './pages/Sales'
+import SaleNew from './pages/SaleNew'
+import SaleDetail from './pages/SaleDetail'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -42,11 +47,13 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="products" element={<Products />} />
             <Route path="categories" element={<Categories />} />
-            <Route path="sales" element={<PlaceholderPage title="Sales" description="View and create sales transactions" />} />
+            <Route path="sales" element={<Sales />} />
+            <Route path="sales/new" element={<SaleNew />} />
+            <Route path="sales/:id" element={<SaleDetail />} />
             <Route path="purchases" element={<PlaceholderPage title="Purchases" description="Record incoming stock and purchases" />} />
-            <Route path="customers" element={<PlaceholderPage title="Customers" description="Manage customer information" />} />
+            <Route path="customers" element={<Customers />} />
 
-            <Route path="suppliers" element={<AdminRoute><PlaceholderPage title="Suppliers" description="Manage supplier information" /></AdminRoute>} />
+            <Route path="suppliers" element={<AdminRoute><Suppliers /></AdminRoute>} />
             <Route path="reports" element={<AdminRoute><PlaceholderPage title="Reports" description="Sales, inventory, and profit reports" /></AdminRoute>} />
             <Route path="users" element={<AdminRoute><PlaceholderPage title="Users" description="Manage staff accounts and permissions" /></AdminRoute>} />
           </Route>

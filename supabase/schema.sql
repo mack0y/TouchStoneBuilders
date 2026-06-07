@@ -612,3 +612,57 @@ BEGIN
       ('Tiles Plus Trading', 'Karen Gomez', '09251112222', 'karen@tilesplus.com', 'Macapagal Blvd., Pasay');
   END IF;
 END $$;
+
+-- 9. RPC: Create sale transactionally (sale + items + stock check)
+-- SECURITY INVOKER: RLS applies, user_id is taken from auth.uid() (no impersonation)
+-- Items trigger handles stock check + deduction; if any item fails, the whole tx rolls back
+
+CREATE OR REPLACE FUNCTION create_sale(
+  p_customer_id BIGINT,
+  p_discount DECIMAL,
+  p_items JSONB
+)
+RETURNS TABLE (
+  sale_id BIGINT,
+  invoice_no TEXT,
+  total DECIMAL
+)
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+  v_sale_id BIGINT;
+  v_invoice_no TEXT;
+  v_subtotal DECIMAL(12,2) := 0;
+  v_total DECIMAL(12,2);
+BEGIN
+  IF p_items IS NULL OR jsonb_array_length(p_items) = 0 THEN
+    RAISE EXCEPTION 'Sale must have at least one item';
+  END IF;
+
+  IF p_discount IS NOT NULL AND p_discount < 0 THEN
+    RAISE EXCEPTION 'Discount must be non-negative';
+  END IF;
+
+  SELECT COALESCE(SUM((item->>'quantity')::DECIMAL * (item->>'unit_price')::DECIMAL), 0)
+  INTO v_subtotal
+  FROM jsonb_array_elements(p_items) AS item;
+
+  v_total := GREATEST(v_subtotal - COALESCE(p_discount, 0), 0);
+
+  INSERT INTO sales (customer_id, user_id, subtotal, discount, total)
+  VALUES (p_customer_id, auth.uid(), v_subtotal, COALESCE(p_discount, 0), v_total)
+  RETURNING id, invoice_no INTO v_sale_id, v_invoice_no;
+
+  INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal)
+  SELECT
+    v_sale_id,
+    (item->>'product_id')::BIGINT,
+    (item->>'quantity')::DECIMAL,
+    (item->>'unit_price')::DECIMAL,
+    (item->>'quantity')::DECIMAL * (item->>'unit_price')::DECIMAL
+  FROM jsonb_array_elements(p_items) AS item;
+
+  RETURN QUERY SELECT v_sale_id, v_invoice_no, v_total;
+END;
+$$;

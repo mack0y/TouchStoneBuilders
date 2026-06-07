@@ -26,6 +26,7 @@ DROP FUNCTION IF EXISTS restore_stock_on_sale_item_delete CASCADE;
 DROP FUNCTION IF EXISTS add_stock_on_purchase CASCADE;
 DROP FUNCTION IF EXISTS adjust_stock_on_purchase_update CASCADE;
 DROP FUNCTION IF EXISTS is_admin CASCADE;
+DROP FUNCTION IF EXISTS create_sale CASCADE;
 
 -- Drop sequence
 DROP SEQUENCE IF EXISTS sale_number_seq CASCADE;

@@ -4,3 +4,15 @@
 :root {
   font-family: system-ui, -apple-system, sans-serif;
 }
+
+@media print {
+  .drawer-side,
+  .navbar,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    background: #fff !important;
+  }
+}

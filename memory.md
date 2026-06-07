@@ -190,11 +190,15 @@ touchstone-builders/
     ├── App.jsx                # Router + route guards
     ├── index.css              # Tailwind v4 + DaisyUI v5 imports
     ├── lib/
-    │   └── supabaseClient.js  # Supabase client from env vars
+    │   ├── supabaseClient.js  # Supabase client from env vars
+    │   └── format.js          # Shared peso() and dateFmt() helpers
     ├── hooks/
     │   ├── useAuth.jsx        # Auth context + provider
     │   ├── useProducts.js     # Products CRUD (Supabase queries + error/mounted guard)
-    │   └── useCategories.js   # Categories CRUD w/ product count join
+    │   ├── useCategories.js   # Categories CRUD w/ product count join
+    │   ├── useCustomers.js    # Customers CRUD w/ sales(count) join
+    │   ├── useSuppliers.js    # Suppliers CRUD w/ purchases(count) join
+    │   └── useSales.js        # useSales(list+filters), useSale(id), createSale (RPC)
     ├── components/
     │   ├── layout/
     │   │   └── AppLayout.jsx  # Responsive sidebar + navbar
@@ -208,6 +212,11 @@ touchstone-builders/
         ├── Dashboard.jsx      # KPI cards + recent sales + alerts
         ├── Products.jsx       # Full CRUD w/ search, filter, low stock badge
         ├── Categories.jsx     # Full CRUD w/ product count
+        ├── Customers.jsx      # Full CRUD w/ sales count (Edit all, Del admin)
+        ├── Suppliers.jsx      # Admin-only CRUD w/ purchases count
+        ├── Sales.jsx          # History list w/ date range filter
+        ├── SaleNew.jsx        # New sale form (product picker + cart + customer + discount)
+        ├── SaleDetail.jsx     # Read-only invoice view (print-friendly)
         ├── NotFound.jsx       # 404 page
         └── PlaceholderPage.jsx# Generic "Coming soon" page
 ```
@@ -307,24 +316,25 @@ touchstone-builders/
 - Catches: null crash on edit (`String(product.price ?? '')`), NaN in numeric fields (`parseFloat || 0`), misleading delete error messages, "Page 1 of 0" in pagination, unmount memory leaks, silent hook errors
 - Debug Agent reviewed and fixed: all 1 critical, 5 high, 5 medium issues resolved. Build passes with 0 errors.
 
+### Phase 5 — Customers & Suppliers ✓
+- useCustomers hook (CRUD with `sales(count)` join) and useSuppliers hook (CRUD with `purchases(count)` join)
+- Customers page: full CRUD, sales count column, **Edit visible to all authenticated users, Del admin-only** (matches RLS intent), trimmed-name validation, friendly FK error on delete-with-sales, sortable count column, separate page/form error state
+- Suppliers page: admin-only CRUD with in-page `isAdmin` defense-in-depth + "Access denied" fallback, purchases count column, friendly FK error on delete-with-purchases, textarea address for consistency
+- Catches: Edit button incorrectly hidden for non-admins (contradicting RLS), no `isAdmin` gate on Suppliers (route-only defense), whitespace-only name accepted, non-sortable count columns, duplicate page/modal error alerts
+- Debug Agent reviewed and fixed: 2 high, 3 medium, 3 low issues resolved. Build passes with 0 errors.
+
+### Phase 6 — Sales ✓
+- **Schema**: new `create_sale` RPC (transactional: sale + sale_items + stock check). `SECURITY INVOKER` so RLS applies; `user_id` taken from `auth.uid()` (no impersonation); input validation guards empty items and negative discount; stock check enforced by existing trigger with `SELECT FOR UPDATE` row lock; one tx rolls back on any item failure
+- **useSales.js**: `useSales({startDate, endDate})` (list with PHT-aware date filter), `useSale(id)` (single + items, with numeric-id validation), `createSale(...)` (RPC caller, coerces `sale_id` to number)
+- **Sales.jsx** (history): date range filter (auto-applies), invoice link → detail, total column sorts numerically (not as DECIMAL string), label `htmlFor` association, range in description ("from X to Y" etc.)
+- **SaleNew.jsx** (new sale form): product search/picker with out-of-stock + low-stock badges, cart table with editable qty + oversell guard, customer dropdown (Walk-in supported) with loading state, discount input (clamped to ≥0), auto-calc subtotal/total with `round2()` to match DB `DECIMAL`, sticky summary panel, **double-click prevention via `savingRef`**, error cleared at top of confirm
+- **SaleDetail.jsx** (invoice view): read-only invoice with header (invoice # + date + customer info), items table, totals; print button (CSS `@media print` hides sidebar/navbar/`.no-print` chrome); "New Sale" + "Back" actions
+- Catches: timezone-naive date filter (8hr off in PHT), double-click duplicate sale risk, total column sorted as string, negative discount silently ignored, print included full app chrome, invalid IDs surfaced raw PG error, `create_sale` had no input validation, JS double arithmetic drift, BIGINT returned as string, dead `it.unit` fallback
+- Debug Agent reviewed and fixed: 0 critical, 3 high, 6 medium, 9 low issues resolved. Build passes with 0 errors.
+
 ---
 
 ## Remaining Phases
-
-### Phase 5 — Customers & Suppliers
-- [ ] Customer list page + add/edit modal
-- [ ] Supplier list page + add/edit modal
-- [ ] Search/filter on both tables
-- [ ] Debug Agent review
-
-### Phase 6 — Sales
-- [ ] New Sale page: product search/select, line items table, auto-calc totals
-- [ ] Customer quick-select dropdown
-- [ ] Discount input
-- [ ] Confirm sale → inserts sale + items (DB handles stock + invoice number)
-- [ ] Sales history page with date range filter
-- [ ] Invoice view (read-only detail of a sale)
-- [ ] Debug Agent review
 
 ### Phase 7 — Purchases
 - [ ] New Purchase form: select product, supplier, qty, unit cost
