@@ -184,7 +184,8 @@ touchstone-builders/
 ├── memory.md
 ├── supabase/
 │   ├── reset.sql              # Drops everything, safe re-run
-│   └── schema.sql             # Full schema + seed (idempotent)
+│   ├── schema.sql             # Full schema + seed (idempotent)
+│   └── migration_users.sql    # Phase 10: is_active column + admin_create_user RPC
 └── src/
     ├── main.jsx               # Entry point
     ├── App.jsx                # Router + route guards
@@ -198,7 +199,11 @@ touchstone-builders/
     │   ├── useCategories.js   # Categories CRUD w/ product count join
     │   ├── useCustomers.js    # Customers CRUD w/ sales(count) join
     │   ├── useSuppliers.js    # Suppliers CRUD w/ purchases(count) join
-    │   └── useSales.js        # useSales(list+filters), useSale(id), createSale (RPC)
+    │   ├── useSales.js        # useSales(list+filters), useSale(id), createSale (RPC)
+    │   ├── usePurchases.js    # usePurchases(list+filters), createPurchase
+    │   ├── useDashboard.js    # KPIs, sales trend, low stock, recent sales, top products
+    │   ├── useReports.js      # Sales, inventory, profit reports + CSV export utilities
+    │   └── useUsers.js        # List users, create (RPC), toggle active, update role
     ├── components/
     │   ├── layout/
     │   │   └── AppLayout.jsx  # Responsive sidebar + navbar
@@ -206,10 +211,11 @@ touchstone-builders/
     │       ├── PageHeader.jsx
     │       ├── LoadingScreen.jsx
     │       ├── DataTable.jsx  # Reusable TanStack table (sort, search, paginate)
-    │       └── Modal.jsx      # DaisyUI dialog wrapper (ref-safe onClose)
+    │       ├── Modal.jsx      # DaisyUI dialog wrapper (ref-safe onClose)
+    │       └── DateRangePicker.jsx # Reusable date range with presets
     └── pages/
         ├── Login.jsx          # Email/password form
-        ├── Dashboard.jsx      # KPI cards + recent sales + alerts
+        ├── Dashboard.jsx      # Live KPIs, chart, recent sales, alerts, top products
         ├── Products.jsx       # Full CRUD w/ search, filter, low stock badge
         ├── Categories.jsx     # Full CRUD w/ product count
         ├── Customers.jsx      # Full CRUD w/ sales count (Edit all, Del admin)
@@ -217,6 +223,10 @@ touchstone-builders/
         ├── Sales.jsx          # History list w/ date range filter
         ├── SaleNew.jsx        # New sale form (product picker + cart + customer + discount)
         ├── SaleDetail.jsx     # Read-only invoice view (print-friendly)
+        ├── Purchases.jsx      # Purchase history w/ date range filter
+        ├── PurchaseNew.jsx    # New purchase form (product + supplier + qty + cost)
+        ├── Reports.jsx        # Admin: Sales, Inventory, Profit tabs + CSV export
+        ├── Users.jsx          # Admin: user list, create, promote/demote, toggle active
         ├── NotFound.jsx       # 404 page
         └── PlaceholderPage.jsx# Generic "Coming soon" page
 ```
@@ -332,38 +342,34 @@ touchstone-builders/
 - Catches: timezone-naive date filter (8hr off in PHT), double-click duplicate sale risk, total column sorted as string, negative discount silently ignored, print included full app chrome, invalid IDs surfaced raw PG error, `create_sale` had no input validation, JS double arithmetic drift, BIGINT returned as string, dead `it.unit` fallback
 - Debug Agent reviewed and fixed: 0 critical, 3 high, 6 medium, 9 low issues resolved. Build passes with 0 errors.
 
----
+### Phase 7 — Purchases ✓
+- **usePurchases.js** hook: `usePurchases({startDate, endDate})` (PHT-aware list + date filter), `createPurchase(...)` (inserts row, DB trigger auto-adds stock)
+- **PurchaseNew.jsx**: searchable product picker (shows stock/cost), supplier dropdown, qty + unit cost inputs, auto-calc total, double-click prevention
+- **Purchases.jsx**: history table with date range filter, search, sort (Date, Product, SKU, Supplier, Qty, Unit Cost, Total Cost)
+- DB trigger `trg_purchases_add_stock` handles stock increment automatically
 
-## Remaining Phases
+### Phase 8 — Dashboard (live) ✓
+- **useDashboard.js** hook: fetches all 5 data sets in parallel with `Promise.all`
+- KPI cards: total products, low stock count, today's sales count, today's revenue (real Supabase queries)
+- Sales trend chart (Recharts AreaChart with gradient fill) — last 30 days, gaps filled with 0
+- Top selling products (by quantity, aggregated from sale_items)
+- Recent sales mini-table (last 5)
+- Low stock alerts list (products where stock <= reorder_level, color-coded)
+- PHT timezone handling via `toLocaleString('en-US', { timeZone: 'Asia/Manila' })`
 
-### Phase 7 — Purchases
-- [ ] New Purchase form: select product, supplier, qty, unit cost
-- [ ] Auto-calculates total cost, DB trigger adds to stock
-- [ ] Purchase history table
-- [ ] Debug Agent review
+### Phase 9 — Reports (Admin) ✓
+- **DateRangePicker.jsx** reusable component: date inputs, preset buttons (Today/7d/30d/90d), Clear
+- **useReports.js** hook: 3 reports in parallel:
+  - Sales report: total sales count, revenue, discount, items sold, avg order value
+  - Inventory report: product list with stock value at selling price and cost, low/out-of-stock counts
+  - Profit report: revenue - COGS, margin %, top 10 products by profit
+- **Reports.jsx**: tabs UI (Sales/Inventory/Profit & Loss), summary cards, full inventory table, top products by profit table
+- CSV export on every tab via `convertToCSV()` + `downloadCSV()` utilities
 
-### Phase 8 — Dashboard (live)
-- [ ] KPI cards: total products, low stock count, today's sales count, today's revenue (real Supabase queries)
-- [ ] Sales trend chart (Recharts) — last 30 days
-- [ ] Low stock alerts list (products where stock <= reorder_level)
-- [ ] Recent sales mini-table
-- [ ] Top selling products (by quantity)
-- [ ] Debug Agent review
-
-### Phase 9 — Reports (Admin)
-- [ ] Date range picker component
-- [ ] Sales report: total, count, items sold, by date range
-- [ ] Inventory report: stock on hand, stock value
-- [ ] Profit report: total revenue - COGS (sum of cost of goods sold)
-- [ ] CSV export
-- [ ] Debug Agent review
-
-### Phase 10 — User Management (Admin)
-- [ ] Worker list table
-- [ ] Add worker form (creates auth user + profile via Supabase Admin API)
-- [ ] Toggle active/inactive
-- [ ] Edit role
-- [ ] Debug Agent review
+### Phase 10 — User Management (Admin) ✓
+- **migration_users.sql**: adds `is_active` column to profiles, `admin_create_user()` RPC (creates auth user via `SECURITY DEFINER`), `admin_toggle_user_active()` RPC
+- **useUsers.js** hook: list profiles, RPC-based create/toggleActive, direct supabase update for role
+- **Users.jsx**: table with Name/Email/Role/Status/Created, Promote/Demote buttons (disabled for self), Activate/Deactivate, Add User modal (email + password + name + role)
 
 ---
 
@@ -410,6 +416,7 @@ npm run preview
 1. Go to Supabase Dashboard → SQL Editor
 2. Run `supabase/reset.sql` (or skip if first time)
 3. Run `supabase/schema.sql`
+4. Run `supabase/migration_users.sql` (for user management features)
 
 ### First Admin User
 

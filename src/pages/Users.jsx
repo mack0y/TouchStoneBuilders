@@ -1,0 +1,186 @@
+import { useState } from 'react'
+import { useUsers } from '../hooks/useUsers'
+import { useAuth } from '../hooks/useAuth'
+import PageHeader from '../components/ui/PageHeader'
+import DataTable from '../components/ui/DataTable'
+import Modal from '../components/ui/Modal'
+import { createColumnHelper } from '@tanstack/react-table'
+import { dateFmt } from '../lib/format'
+
+const emptyForm = { email: '', password: '', full_name: '', role: 'worker' }
+
+export default function Users() {
+  const { users, loading, error: loadError, createUser, updateRole, toggleActive } = useUsers()
+  const { user: currentUser } = useAuth()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [form, setForm] = useState(emptyForm)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  function openCreate() {
+    setForm(emptyForm)
+    setError('')
+    setModalOpen(true)
+  }
+
+  async function handleSave(e) {
+    e.preventDefault()
+    if (!form.email.trim() || !form.password || !form.full_name.trim()) {
+      setError('Email, password, and full name are required')
+      return
+    }
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+    setError('')
+    setSaving(true)
+    try {
+      await createUser({
+        email: form.email,
+        password: form.password,
+        fullName: form.full_name,
+        role: form.role,
+      })
+      setModalOpen(false)
+    } catch (err) {
+      setError(err.message || 'Failed to create user')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleToggleActive(u) {
+    const active = u.is_active ?? true
+    if (!window.confirm(`${active ? 'Deactivate' : 'Activate'} user "${u.full_name || u.email}"?`)) return
+    try {
+      await toggleActive(u.id, !active)
+    } catch (err) {
+      setError(err.message || 'Failed to toggle user status')
+    }
+  }
+
+  async function handleRoleChange(u, role) {
+    if (!window.confirm(`Change role for "${u.full_name || u.email}" to ${role}?`)) return
+    try {
+      await updateRole(u.id, role)
+    } catch (err) {
+      setError(err.message || 'Failed to update role')
+    }
+  }
+
+  const columnHelper = createColumnHelper()
+  const columns = [
+    columnHelper.accessor('full_name', { header: 'Name', enableSorting: true, cell: (info) => info.getValue() || '—' }),
+    columnHelper.accessor('email', { header: 'Email', enableSorting: true }),
+    columnHelper.accessor('role', {
+      header: 'Role',
+      enableSorting: true,
+      cell: (info) => (
+        <span className={`badge badge-sm ${info.getValue() === 'admin' ? 'badge-primary' : 'badge-soft'}`}>
+          {info.getValue()}
+        </span>
+      ),
+    }),
+    columnHelper.accessor((row) => row.is_active ?? true, {
+      id: 'is_active',
+      header: 'Status',
+      enableSorting: true,
+      cell: (info) => (
+        <span className={`badge badge-sm ${info.getValue() ? 'badge-success' : 'badge-error'}`}>
+          {info.getValue() ? 'Active' : 'Inactive'}
+        </span>
+      ),
+    }),
+    columnHelper.accessor('created_at', {
+      header: 'Created',
+      enableSorting: true,
+      cell: (info) => dateFmt(info.getValue(), { dateStyle: 'short' }),
+    }),
+    columnHelper.display({
+      id: 'actions',
+      header: '',
+      cell: (info) => {
+        const u = info.row.original
+        const isSelf = u.id === currentUser?.id
+        return (
+          <div className="flex gap-1 justify-end">
+            {u.role === 'admin'
+              ? <button className="btn btn-ghost btn-xs" onClick={() => handleRoleChange(u, 'worker')} disabled={isSelf}>Demote</button>
+              : <button className="btn btn-ghost btn-xs" onClick={() => handleRoleChange(u, 'admin')} disabled={isSelf}>Promote</button>
+            }
+            <button
+              className={`btn btn-ghost btn-xs ${(u.is_active ?? true) ? 'text-warning' : 'text-success'}`}
+              onClick={() => handleToggleActive(u)}
+              disabled={isSelf}
+            >
+              {(u.is_active ?? true) ? 'Deactivate' : 'Activate'}
+            </button>
+          </div>
+        )
+      },
+    }),
+  ]
+
+  return (
+    <div>
+      <PageHeader
+        title="Users"
+        description={`${users.length} user${users.length !== 1 ? 's' : ''} total`}
+        actions={
+          <button className="btn btn-primary btn-sm" onClick={openCreate}>+ Add User</button>
+        }
+      />
+
+      {(loadError || error) && (
+        <div className="alert alert-error text-sm mb-4" role="alert">{loadError || error}</div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
+      ) : (
+        <div className="card bg-base-100 border border-base-300">
+          <div className="card-body p-3">
+            <DataTable columns={columns} data={users} searchPlaceholder="Search users..." />
+          </div>
+        </div>
+      )}
+
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add User">
+        <form onSubmit={handleSave} className="flex flex-col gap-3">
+          {error && <div className="alert alert-error text-sm py-2" role="alert">{error}</div>}
+
+          <label className="form-control">
+            <span className="label-text">Full Name</span>
+            <input className="input input-bordered input-sm" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
+          </label>
+
+          <label className="form-control">
+            <span className="label-text">Email</span>
+            <input type="email" className="input input-bordered input-sm" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+          </label>
+
+          <label className="form-control">
+            <span className="label-text">Password</span>
+            <input type="password" className="input input-bordered input-sm" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
+          </label>
+
+          <label className="form-control">
+            <span className="label-text">Role</span>
+            <select className="select select-bordered select-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+              <option value="worker">Worker</option>
+              <option value="admin">Admin</option>
+            </select>
+          </label>
+
+          <div className="flex justify-end gap-2 mt-2">
+            <button type="button" className="btn btn-soft btn-sm" onClick={() => setModalOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+              {saving ? <span className="loading loading-spinner loading-xs" /> : 'Create User'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  )
+}

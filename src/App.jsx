@@ -13,6 +13,10 @@ import Suppliers from './pages/Suppliers'
 import Sales from './pages/Sales'
 import SaleNew from './pages/SaleNew'
 import SaleDetail from './pages/SaleDetail'
+import Purchases from './pages/Purchases'
+import PurchaseNew from './pages/PurchaseNew'
+import Reports from './pages/Reports'
+import Users from './pages/Users'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -50,12 +54,13 @@ export default function App() {
             <Route path="sales" element={<Sales />} />
             <Route path="sales/new" element={<SaleNew />} />
             <Route path="sales/:id" element={<SaleDetail />} />
-            <Route path="purchases" element={<PlaceholderPage title="Purchases" description="Record incoming stock and purchases" />} />
+            <Route path="purchases" element={<Purchases />} />
+            <Route path="purchases/new" element={<PurchaseNew />} />
             <Route path="customers" element={<Customers />} />
 
             <Route path="suppliers" element={<AdminRoute><Suppliers /></AdminRoute>} />
-            <Route path="reports" element={<AdminRoute><PlaceholderPage title="Reports" description="Sales, inventory, and profit reports" /></AdminRoute>} />
-            <Route path="users" element={<AdminRoute><PlaceholderPage title="Users" description="Manage staff accounts and permissions" /></AdminRoute>} />
+            <Route path="reports" element={<AdminRoute><Reports /></AdminRoute>} />
+            <Route path="users" element={<AdminRoute><Users /></AdminRoute>} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
