@@ -1,5 +1,11 @@
 import { useEffect, useRef } from 'react'
 
+function getFocusableElements(container) {
+  return container.querySelectorAll(
+    'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+  )
+}
+
 export default function Modal({ open, onClose, title, children }) {
   const ref = useRef(null)
   const onCloseRef = useRef(onClose)
@@ -21,6 +27,30 @@ export default function Modal({ open, onClose, title, children }) {
     return () => el.removeEventListener('close', handleClose)
   }, [])
 
+  useEffect(() => {
+    if (!open) return
+    const el = ref.current
+    if (!el) return
+
+    function handleKeyDown(e) {
+      if (e.key !== 'Tab') return
+      const focusable = getFocusableElements(el)
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    el.addEventListener('keydown', handleKeyDown)
+    return () => el.removeEventListener('keydown', handleKeyDown)
+  }, [open])
+
   return (
     <dialog
       id={dialogId.current}
@@ -29,8 +59,8 @@ export default function Modal({ open, onClose, title, children }) {
       aria-labelledby={title ? `${dialogId.current}-title` : undefined}
       aria-modal="true"
     >
-      <div className="modal-box max-w-lg">
-        <button type="button" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={onClose}>✕</button>
+      <div className="modal-box max-w-lg shadow-2xl border border-base-200/50 p-6 animate-scale-in">
+        <button type="button" className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 text-base-content/40 hover:text-base-content" onClick={onClose} aria-label="Close">✕</button>
         {title && <h3 id={`${dialogId.current}-title`} className="font-bold text-lg mb-4">{title}</h3>}
         {children}
       </div>

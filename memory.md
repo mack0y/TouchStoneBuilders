@@ -137,6 +137,14 @@ All tables are in the `public` schema. All use `CREATE TABLE IF NOT EXISTS` for 
 - `total_cost` DECIMAL(12,2) ≥ 0
 - `created_at` TIMESTAMPTZ
 
+**stock_adjustments** (NEW — Phase 11)
+- `id` BIGINT GENERATED ALWAYS AS IDENTITY PK
+- `product_id` BIGINT NOT NULL → products(id)
+- `quantity_change` DECIMAL(12,3) NOT NULL — positive to add, negative to remove
+- `reason` TEXT NOT NULL
+- `user_id` UUID NOT NULL → profiles(id)
+- `created_at` TIMESTAMPTZ
+
 ### Indexes
 
 All foreign keys and commonly-queried columns are indexed: product name, SKU, category, sale created_at, invoice_no, sale_items(product_id + sale_id), purchases(product_id + supplier_id + user_id), customer name, sales(customer_id + user_id).
@@ -151,6 +159,9 @@ All foreign keys and commonly-queried columns are indexed: product name, SKU, ca
 6. **`restore_stock_on_sale_item_delete`** — AFTER DELETE on `sale_items`: adds stock back
 7. **`add_stock_on_purchase`** — AFTER INSERT on `purchases`: adds quantity to product stock
 8. **`adjust_stock_on_purchase_update`** — AFTER UPDATE on `purchases`: adjusts stock by diff
+9. **`reverse_stock_on_purchase_delete`** — AFTER DELETE on `purchases`: subtracts quantity from stock
+10. **`reverse_stock_on_adjustment_delete`** — AFTER DELETE on `stock_adjustments`: reverses the adjustment
+11. **`adjust_stock` RPC** — Manual stock adjustment with audit trail
 
 ### Row Level Security (RLS)
 
@@ -163,6 +174,7 @@ All tables have RLS enabled. Helper function `is_admin()` checks `profiles.role 
 - `sales`: any authenticated user can read; users can only insert with `user_id = auth.uid()`; only admins can update/delete.
 - `sale_items`: any authenticated user can read; users can only insert/update items belonging to their own sales; only admins can delete.
 - `purchases`: any authenticated user can read; users can only insert with `user_id = auth.uid()`; only admins can update/delete.
+- `stock_adjustments`: authenticated users can read/insert; only admins can delete.
 
 ### Seed Data
 
@@ -179,56 +191,62 @@ All tables have RLS enabled. Helper function `is_admin()` checks `profiles.role 
 touchstone-builders/
 ├── index.html
 ├── vite.config.js
-├── .env.example              # VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY
 ├── package.json
 ├── memory.md
 ├── supabase/
-│   ├── reset.sql              # Drops everything, safe re-run
-│   ├── schema.sql             # Full schema + seed (idempotent)
-│   └── migration_users.sql    # Phase 10: is_active column + admin_create_user RPC
+│   ├── reset.sql
+│   ├── schema.sql
+│   ├── migration_users.sql
+│   ├── migration_stock_adjustments.sql
+│   └── migration_inventory_delete.sql
 └── src/
-    ├── main.jsx               # Entry point
-    ├── App.jsx                # Router + route guards
-    ├── index.css              # Tailwind v4 + DaisyUI v5 imports
+    ├── main.jsx
+    ├── App.jsx
+    ├── index.css
     ├── lib/
-    │   ├── supabaseClient.js  # Supabase client from env vars
-    │   └── format.js          # Shared peso() and dateFmt() helpers
+    │   ├── supabaseClient.js
+    │   └── format.js
     ├── hooks/
-    │   ├── useAuth.jsx        # Auth context + provider
-    │   ├── useProducts.js     # Products CRUD (Supabase queries + error/mounted guard)
-    │   ├── useCategories.js   # Categories CRUD w/ product count join
-    │   ├── useCustomers.js    # Customers CRUD w/ sales(count) join
-    │   ├── useSuppliers.js    # Suppliers CRUD w/ purchases(count) join
-    │   ├── useSales.js        # useSales(list+filters), useSale(id), createSale (RPC)
-    │   ├── usePurchases.js    # usePurchases(list+filters), createPurchase
-    │   ├── useDashboard.js    # KPIs, sales trend, low stock, recent sales, top products
-    │   ├── useReports.js      # Sales, inventory, profit reports + CSV export utilities
-    │   └── useUsers.js        # List users, create (RPC), toggle active, update role
+    │   ├── useAuth.jsx
+    │   ├── useProducts.js
+    │   ├── useCategories.js
+    │   ├── useCustomers.js
+    │   ├── useSuppliers.js
+    │   ├── useSales.js
+    │   ├── usePurchases.js
+    │   ├── useDashboard.js
+    │   ├── useReports.js
+    │   ├── useUsers.js
+    │   ├── useInventory.js
+    │   └── useToast.jsx
     ├── components/
     │   ├── layout/
-    │   │   └── AppLayout.jsx  # Responsive sidebar + navbar
+    │   │   └── AppLayout.jsx
     │   └── ui/
     │       ├── PageHeader.jsx
     │       ├── LoadingScreen.jsx
-    │       ├── DataTable.jsx  # Reusable TanStack table (sort, search, paginate)
-    │       ├── Modal.jsx      # DaisyUI dialog wrapper (ref-safe onClose)
-    │       └── DateRangePicker.jsx # Reusable date range with presets
+    │       ├── DataTable.jsx
+    │       ├── Modal.jsx
+    │       ├── ConfirmModal.jsx
+    │       ├── DateRangePicker.jsx
+    │       └── ErrorBoundary.jsx
     └── pages/
-        ├── Login.jsx          # Email/password form
-        ├── Dashboard.jsx      # Live KPIs, chart, recent sales, alerts, top products
-        ├── Products.jsx       # Full CRUD w/ search, filter, low stock badge
-        ├── Categories.jsx     # Full CRUD w/ product count
-        ├── Customers.jsx      # Full CRUD w/ sales count (Edit all, Del admin)
-        ├── Suppliers.jsx      # Admin-only CRUD w/ purchases count
-        ├── Sales.jsx          # History list w/ date range filter
-        ├── SaleNew.jsx        # New sale form (product picker + cart + customer + discount)
-        ├── SaleDetail.jsx     # Read-only invoice view (print-friendly)
-        ├── Purchases.jsx      # Purchase history w/ date range filter
-        ├── PurchaseNew.jsx    # New purchase form (product + supplier + qty + cost)
-        ├── Reports.jsx        # Admin: Sales, Inventory, Profit tabs + CSV export
-        ├── Users.jsx          # Admin: user list, create, promote/demote, toggle active
-        ├── NotFound.jsx       # 404 page
-        └── PlaceholderPage.jsx# Generic "Coming soon" page
+        ├── Login.jsx
+        ├── Dashboard.jsx
+        ├── Products.jsx
+        ├── Categories.jsx
+        ├── Customers.jsx
+        ├── Suppliers.jsx
+        ├── Sales.jsx
+        ├── SaleNew.jsx
+        ├── SaleDetail.jsx
+        ├── Purchases.jsx
+        ├── PurchaseNew.jsx
+        ├── Reports.jsx
+        ├── Users.jsx
+        ├── Inventory.jsx
+        ├── NotFound.jsx
+        └── PlaceholderPage.jsx
 ```
 
 ---
@@ -268,6 +286,7 @@ touchstone-builders/
 - Color opacity uses `/` syntax: `bg-primary/20`, NOT `bg-opacity-20`
 - Sizing: use Tailwind's scale (`w-64` for 16rem). Use arbitrary values (`w-[4.5rem]`) only when scale doesn't support it
 - Avoid `w-18` — not in Tailwind v4 scale. Use `w-[4.5rem]` instead
+- Mobile-first responsive design with bottom nav bar for mobile users
 
 ### Accessibility
 - Interactive elements must have `aria-label` if they use icon-only buttons
@@ -371,6 +390,34 @@ touchstone-builders/
 - **useUsers.js** hook: list profiles, RPC-based create/toggleActive, direct supabase update for role
 - **Users.jsx**: table with Name/Email/Role/Status/Created, Promote/Demote buttons (disabled for self), Activate/Deactivate, Add User modal (email + password + name + role)
 
+### Phase 11 — Inventory Management ✓
+- **Stock Adjustments**: manual stock corrections with audit trail (reason + user attribution)
+- **migration_stock_adjustments.sql**: `stock_adjustments` table, RLS policies, `adjust_stock` RPC
+- **migration_inventory_delete.sql**: delete policies + reverse-stock triggers for purchases and adjustments
+- **useInventory.js**: full CRUD — receiveStock, adjustStock, deletePurchase, deleteAdjustment, updateProduct, createProduct, createCategory, createSupplier, generateSku, movementLog
+- **Inventory.jsx**: single hub for all stock activities with 4 prominent tabs:
+  - **Add Inventory** — searchable product combobox (products only show when typing), 2-step new product wizard, inline new category/supplier creation
+  - **Stock Levels** — full DataTable with category/status filters, per-row admin actions (Receive, Adjust, Edit)
+  - **Adjust Stock** — inline form with reason field + recent adjustments list with delete
+  - **History** — unified movement log combining purchases and adjustments
+
+### Phase 12 — UI/UX Overhaul ✓
+- **Visual Polish**: gradient branding, KPI card gradients, card hover effects, modal/toast animations, chart gradient fill, zebra striping, search icons
+- **Mobile-Friendly**: fixed bottom navigation bar (5 items), card view for tables on small screens, touch-friendly targets, safe area insets, stacked layouts
+- **Component Upgrades**: typed toast notifications, animated confirm modals, branded loading screen, branded error boundary
+- **Dashboard Quick Actions**: New Sale, Stock In (now Inventory), Inventory buttons for one-click access
+
+### Phase 13 — Non-Tech User UX ✓
+- **Auto-SKU Generation**: item codes auto-generated from category (e.g., CMT-001, PLB-003)
+- **2-Step Product Wizard**: Step 1 (name + category + unit) → Step 2 (pricing + delivery details)
+- **Searchable Product Combobox**: products only appear when typing, not all at once
+- **Plain Language Labels**: "What product are you receiving?", "How many did you receive?", "Cost per piece from supplier"
+- **Skip Options**: "I don't know the selling price yet" checkbox with edit-later note
+- **Visual Category Dropdown**: bigger select-lg with emoji icons
+- **New Category/Supplier Creation**: inline forms from the Add Inventory wizard
+- **Clear Price Labels**: "Selling Price — What your customers pay" vs "Cost per piece from supplier — What the supplier charges"
+- **Error Handling**: user-friendly messages for 403 Forbidden on category/supplier creation
+
 ---
 
 ## Key Design Decisions & Rationale
@@ -388,6 +435,12 @@ touchstone-builders/
 6. **Role in profiles table (not JWT)** — The `is_admin()` function queries the `profiles` table rather than relying on JWT claims. This makes role changes effective immediately without requiring re-login.
 
 7. **Self-elevation prevented** — The profile UPDATE policy checks that a non-admin user cannot change their own role. Only admins can change roles.
+
+8. **Inventory as single hub** — All stock activities (add, adjust, view) consolidated into one tabbed Inventory page instead of separate pages. Users don't need to navigate between multiple pages for stock management.
+
+9. **Auto-SKU from category** — Non-tech users don't understand SKUs. Auto-generating from category abbreviation + sequence number (CMT-001) removes this burden while keeping codes meaningful.
+
+10. **Cost flows from delivery receipt** — The product's cost price is auto-set from the delivery receipt's unit cost. No separate "cost" field needed — the delivery receipt IS the source of truth.
 
 ---
 
@@ -417,6 +470,8 @@ npm run preview
 2. Run `supabase/reset.sql` (or skip if first time)
 3. Run `supabase/schema.sql`
 4. Run `supabase/migration_users.sql` (for user management features)
+5. Run `supabase/migration_stock_adjustments.sql` (for inventory adjustments)
+6. Run `supabase/migration_inventory_delete.sql` (for delete + reverse-stock triggers)
 
 ### First Admin User
 

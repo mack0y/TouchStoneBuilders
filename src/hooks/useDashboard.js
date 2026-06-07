@@ -59,15 +59,12 @@ export function useDashboard() {
 
     const [
       { count: totalProducts },
-      { count: lowStockCount },
+      { data: allProducts },
       { data: todaySales },
       { data: todayRevenueData },
     ] = await Promise.all([
       supabase.from('products').select('*', { count: 'exact', head: true }),
-      supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .filter('stock_quantity', 'lte', 'reorder_level'),
+      supabase.from('products').select('stock_quantity, reorder_level'),
       supabase
         .from('sales')
         .select('id', { count: 'exact' })
@@ -81,11 +78,14 @@ export function useDashboard() {
     ])
 
     const todayRevenue = todayRevenueData?.reduce((sum, s) => sum + Number(s.total), 0) ?? 0
+    const lowStockCount = (allProducts || []).filter(
+      (p) => Number(p.stock_quantity) <= Number(p.reorder_level)
+    ).length
 
     if (!mountedRef.current) return
     setKpis({
       totalProducts: totalProducts ?? 0,
-      lowStockCount: lowStockCount ?? 0,
+      lowStockCount,
       todaySalesCount: todaySales ?? 0,
       todayRevenue,
     })
@@ -123,13 +123,16 @@ export function useDashboard() {
     const { data, error } = await supabase
       .from('products')
       .select('id, name, sku, stock_quantity, reorder_level, unit, categories(name)')
-      .filter('stock_quantity', 'lte', 'reorder_level')
-      .order('stock_quantity', { ascending: true })
-      .limit(10)
 
     if (error) throw error
+
+    const filtered = (data || [])
+      .filter((p) => Number(p.stock_quantity) <= Number(p.reorder_level))
+      .sort((a, b) => Number(a.stock_quantity) - Number(b.stock_quantity))
+      .slice(0, 10)
+
     if (!mountedRef.current) return
-    setLowStockProducts(data || [])
+    setLowStockProducts(filtered)
   }
 
   async function fetchRecentSales() {
@@ -147,20 +150,22 @@ export function useDashboard() {
   async function fetchTopProducts() {
     const startDate = startOfMonthPHT()
     const { data, error } = await supabase
-      .from('sale_items')
-      .select('quantity, products(name, sku, unit)')
-      .gte('sales.created_at', `${startDate}T00:00:00${TZ_OFFSET}`)
-      .order('quantity', { ascending: false })
+      .from('sales')
+      .select('sale_items(quantity, products(name, sku, unit))')
+      .gte('created_at', `${startDate}T00:00:00${TZ_OFFSET}`)
 
     if (error) throw error
 
     const productMap = new Map()
-    ;(data || []).forEach((item) => {
-      const key = item.products?.id || item.products?.name
-      if (!key) return
-      const existing = productMap.get(key) || { name: item.products?.name, sku: item.products?.sku, unit: item.products?.unit, totalQty: 0 }
-      existing.totalQty += Number(item.quantity)
-      productMap.set(key, existing)
+    ;(data || []).forEach((sale) => {
+      ;(sale.sale_items || []).forEach((item) => {
+        const p = item.products
+        if (!p) return
+        const key = p.name
+        const existing = productMap.get(key) || { name: p.name, sku: p.sku || '', unit: p.unit || 'pcs', totalQty: 0 }
+        existing.totalQty += Number(item.quantity)
+        productMap.set(key, existing)
+      })
     })
 
     const top = Array.from(productMap.values())

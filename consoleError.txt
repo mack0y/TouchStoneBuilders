@@ -1,0 +1,1 @@
+@supabase_supabase-js.js?v=224bef67:21188  POST https://uvgigzqrksfaqyttkirv.supabase.co/rest/v1/categories?select=id 403 (Forbidden)

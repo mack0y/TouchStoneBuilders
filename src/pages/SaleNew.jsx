@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useProducts } from '../hooks/useProducts'
 import { useCustomers } from '../hooks/useCustomers'
 import { createSale } from '../hooks/useSales'
+import { useToast } from '../hooks/useToast'
 import PageHeader from '../components/ui/PageHeader'
 import { peso } from '../lib/format'
 
@@ -20,6 +21,7 @@ export default function SaleNew() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const savingRef = useRef(false)
+  const { addToast } = useToast()
 
   const filteredProducts = useMemo(() => {
     if (!search.trim()) return products
@@ -123,6 +125,7 @@ export default function SaleNew() {
         items: cart,
       })
       if (!result?.sale_id) throw new Error('Sale created but no ID returned')
+      addToast('Sale created successfully')
       navigate(`/sales/${result.sale_id}`)
     } catch (err) {
       setError(err.message || 'Failed to create sale')
@@ -137,30 +140,36 @@ export default function SaleNew() {
       <PageHeader
         title="New Sale"
         description="Create a new sales transaction"
-        actions={<Link to="/sales" className="btn btn-soft btn-sm">Back to Sales</Link>}
+        actions={<Link to="/sales" className="btn btn-ghost btn-sm">← Back to Sales</Link>}
       />
 
-      {error && <div className="alert alert-error text-sm mb-4" role="alert">{error}</div>}
+      {error && <div className="alert alert-error text-sm mb-4 animate-scale-in" role="alert">{error}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <div className="card bg-base-100 border border-base-300">
+          {/* Product List */}
+          <div className="card bg-base-100 border border-base-200/80 card-hover">
             <div className="card-body p-4">
-              <h2 className="card-title text-base mb-2">Products</h2>
-              <input
-                type="search"
-                className="input input-bordered input-sm w-full mb-3"
-                placeholder="Search by name or SKU..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <div className="overflow-y-auto max-h-96 divide-y divide-base-200">
+              <h2 className="card-title text-sm font-semibold mb-2">Products</h2>
+              <div className="relative mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/30">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+                <input
+                  type="search"
+                  className="input input-bordered input-sm w-full pl-9"
+                  placeholder="Search by name or SKU..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="overflow-y-auto max-h-80 divide-y divide-base-200/50 rounded-xl">
                 {productsLoading ? (
                   <div className="flex justify-center py-6">
                     <span className="loading loading-spinner loading-sm text-primary"></span>
                   </div>
                 ) : filteredProducts.length === 0 ? (
-                  <p className="text-center text-base-content/40 py-6 text-sm" role="status">
+                  <p className="text-center text-base-content/30 py-8 text-sm" role="status">
                     No products found
                   </p>
                 ) : (
@@ -171,13 +180,13 @@ export default function SaleNew() {
                       <button
                         key={p.id}
                         type="button"
-                        className="w-full text-left py-2 px-2 hover:bg-base-200 rounded flex justify-between items-center gap-2 disabled:opacity-50"
+                        className="w-full text-left py-3 px-3 hover:bg-base-200/50 active:bg-base-200 transition-colors rounded-lg flex justify-between items-center gap-2 disabled:opacity-40"
                         onClick={() => addToCart(p)}
                         disabled={outOfStock}
                       >
                         <div className="min-w-0">
-                          <p className="font-medium truncate">{p.name}</p>
-                          <p className="text-xs text-base-content/50">
+                          <p className="font-medium text-sm truncate">{p.name}</p>
+                          <p className="text-xs text-base-content/40">
                             {p.sku} · {Number(p.stock_quantity).toLocaleString()} {p.unit}
                             {lowStock && <span className="text-warning ml-1">(low)</span>}
                             {outOfStock && <span className="text-error ml-1">(out)</span>}
@@ -192,40 +201,44 @@ export default function SaleNew() {
             </div>
           </div>
 
-          <div className="card bg-base-100 border border-base-300">
+          {/* Cart */}
+          <div className="card bg-base-100 border border-base-200/80 card-hover">
             <div className="card-body p-4">
               <div className="flex justify-between items-center mb-2">
-                <h2 className="card-title text-base">Cart ({cart.length})</h2>
+                <h2 className="card-title text-sm font-semibold">
+                  Cart
+                  {cart.length > 0 && <span className="badge badge-primary badge-sm">{cart.length}</span>}
+                </h2>
                 {cart.length > 0 && (
-                  <button type="button" className="btn btn-ghost btn-xs" onClick={clearCart}>
-                    Clear
+                  <button type="button" className="btn btn-ghost btn-xs text-error" onClick={clearCart}>
+                    Clear all
                   </button>
                 )}
               </div>
               {cart.length === 0 ? (
-                <p className="text-center text-base-content/40 py-6 text-sm" role="status">
-                  Cart is empty. Click a product above to add it.
+                <p className="text-center text-base-content/30 py-8 text-sm" role="status">
+                  Cart is empty. Tap a product to add it.
                 </p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="table table-zinc table-sm">
+                  <table className="table table-zebra table-sm">
                     <thead>
                       <tr>
-                        <th>Item</th>
-                        <th className="w-28">Qty</th>
-                        <th className="text-right">Unit Price</th>
-                        <th className="text-right">Subtotal</th>
-                        <th></th>
+                        <th className="text-xs">Item</th>
+                        <th className="text-xs w-28">Qty</th>
+                        <th className="text-xs text-right">Price</th>
+                        <th className="text-xs text-right">Subtotal</th>
+                        <th className="w-8"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {cart.map((it) => {
                         const oversell = it.quantity > it.stock_quantity
                         return (
-                          <tr key={it.product_id}>
+                          <tr key={it.product_id} className="hover:bg-base-200/30">
                             <td>
-                              <div className="font-medium">{it.name}</div>
-                              <div className="text-xs text-base-content/50">per {it.unit}</div>
+                              <div className="font-medium text-sm">{it.name}</div>
+                              <div className="text-xs text-base-content/40">per {it.unit}</div>
                             </td>
                             <td>
                               <input
@@ -241,12 +254,12 @@ export default function SaleNew() {
                                 <p className="text-xs text-error mt-1">Max: {it.stock_quantity}</p>
                               )}
                             </td>
-                            <td className="text-right">{peso(it.unit_price)}</td>
-                            <td className="text-right font-medium">{peso(round2(it.quantity * it.unit_price))}</td>
+                            <td className="text-right text-sm">{peso(it.unit_price)}</td>
+                            <td className="text-right font-medium text-sm">{peso(round2(it.quantity * it.unit_price))}</td>
                             <td>
                               <button
                                 type="button"
-                                className="btn btn-ghost btn-xs text-error"
+                                className="btn btn-ghost btn-xs text-error hover:bg-error/10"
                                 onClick={() => removeFromCart(it.product_id)}
                                 aria-label={`Remove ${it.name}`}
                               >
@@ -264,15 +277,16 @@ export default function SaleNew() {
           </div>
         </div>
 
+        {/* Summary Sidebar */}
         <div className="lg:col-span-1">
-          <div className="card bg-base-100 border border-base-300 sticky top-4">
-            <div className="card-body p-4">
-              <h2 className="card-title text-base">Summary</h2>
+          <div className="card bg-base-100 border border-base-200/80 card-hover sticky top-20">
+            <div className="card-body p-5">
+              <h2 className="card-title text-sm font-semibold mb-3">Order Summary</h2>
 
-              <label className="form-control">
-                <span className="label-text text-sm">Customer</span>
+              <label className="form-control mb-4">
+                <span className="label-text text-xs font-medium">Customer</span>
                 <select
-                  className="select select-bordered select-sm"
+                  className="select select-bordered select-sm mt-1"
                   value={customerId}
                   onChange={(e) => setCustomerId(e.target.value)}
                   disabled={customersLoading}
@@ -285,37 +299,41 @@ export default function SaleNew() {
                 </select>
               </label>
 
-              <div className="divider my-2"></div>
+              <div className="divider my-1"></div>
 
-              <div className="flex justify-between text-sm">
-                <span className="text-base-content/60">Items</span>
-                <span>{cart.length}</span>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-base-content/50">Items</span>
+                  <span>{cart.length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-base-content/50">Subtotal</span>
+                  <span>{peso(subtotal)}</span>
+                </div>
+                <label className="form-control">
+                  <span className="label-text text-xs font-medium">Discount (₱)</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="input input-bordered input-sm mt-1"
+                    value={discount}
+                    onChange={handleDiscountChange}
+                    placeholder="0.00"
+                  />
+                </label>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-base-content/60">Subtotal</span>
-                <span>{peso(subtotal)}</span>
-              </div>
-              <label className="form-control mt-2">
-                <span className="label-text text-sm">Discount (₱)</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  className="input input-bordered input-sm"
-                  value={discount}
-                  onChange={handleDiscountChange}
-                  placeholder="0.00"
-                />
-              </label>
-              <div className="divider my-2"></div>
+
+              <div className="divider my-1"></div>
+
               <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>
-                <span>{peso(total)}</span>
+                <span className="text-primary">{peso(total)}</span>
               </div>
 
               <button
                 type="button"
-                className="btn btn-primary mt-4"
+                className="btn btn-primary w-full mt-4 shadow-md hover:shadow-lg transition-shadow"
                 onClick={handleConfirm}
                 disabled={saving || cart.length === 0}
               >

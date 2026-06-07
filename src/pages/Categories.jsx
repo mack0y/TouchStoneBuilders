@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useCategories } from '../hooks/useCategories'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import PageHeader from '../components/ui/PageHeader'
 import DataTable from '../components/ui/DataTable'
 import Modal from '../components/ui/Modal'
+import ConfirmModal from '../components/ui/ConfirmModal'
 import { createColumnHelper } from '@tanstack/react-table'
 
 const emptyForm = { name: '', description: '' }
@@ -16,6 +18,9 @@ export default function Categories() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const { addToast } = useToast()
 
   function openCreate() {
     setEditing(null)
@@ -43,6 +48,7 @@ export default function Categories() {
         await createCategory(payload)
       }
       setModalOpen(false)
+      addToast(editing ? 'Category updated successfully' : 'Category created successfully')
     } catch (err) {
       setError(err.message || 'Failed to save category')
     } finally {
@@ -51,11 +57,24 @@ export default function Categories() {
   }
 
   function handleDelete(cat) {
-    if (!window.confirm(`Delete category "${cat.name}"? This cannot be undone.`)) return
+    setDeleteTarget(cat)
+    setConfirmOpen(true)
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget) return
     setError('')
-    deleteCategory(cat.id).catch((err) => {
-      setError(err.message || 'Failed to delete category')
-    })
+    deleteCategory(deleteTarget.id)
+      .then(() => {
+        addToast('Category deleted successfully')
+        setConfirmOpen(false)
+        setDeleteTarget(null)
+      })
+      .catch((err) => {
+        setError(err.message || 'Failed to delete category')
+        setConfirmOpen(false)
+        setDeleteTarget(null)
+      })
   }
 
   const columnHelper = createColumnHelper()
@@ -96,7 +115,7 @@ export default function Categories() {
       {loading ? (
         <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-300">
+        <div className="card bg-base-100 border border-base-200/80 card-hover">
           <div className="card-body p-3">
             <DataTable columns={columns} data={categories} searchPlaceholder="Search categories..." />
           </div>
@@ -125,6 +144,16 @@ export default function Categories() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onClose={() => { setConfirmOpen(false); setDeleteTarget(null) }}
+        onConfirm={confirmDelete}
+        title="Delete Category"
+        message={deleteTarget ? `Delete category "${deleteTarget.name}"? This cannot be undone.` : ''}
+        confirmLabel="Delete"
+        danger
+      />
     </div>
   )
 }

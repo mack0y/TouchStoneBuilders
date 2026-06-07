@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useUsers } from '../hooks/useUsers'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import PageHeader from '../components/ui/PageHeader'
 import DataTable from '../components/ui/DataTable'
 import Modal from '../components/ui/Modal'
+import ConfirmModal from '../components/ui/ConfirmModal'
 import { createColumnHelper } from '@tanstack/react-table'
 import { dateFmt } from '../lib/format'
 
@@ -16,6 +18,9 @@ export default function Users() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmConfig, setConfirmConfig] = useState({ title: '', message: '', onConfirm: null })
+  const { addToast } = useToast()
 
   function openCreate() {
     setForm(emptyForm)
@@ -43,6 +48,7 @@ export default function Users() {
         role: form.role,
       })
       setModalOpen(false)
+      addToast('User created successfully')
     } catch (err) {
       setError(err.message || 'Failed to create user')
     } finally {
@@ -50,23 +56,42 @@ export default function Users() {
     }
   }
 
-  async function handleToggleActive(u) {
-    const active = u.is_active ?? true
-    if (!window.confirm(`${active ? 'Deactivate' : 'Activate'} user "${u.full_name || u.email}"?`)) return
-    try {
-      await toggleActive(u.id, !active)
-    } catch (err) {
-      setError(err.message || 'Failed to toggle user status')
-    }
+  function showConfirm(title, message, onConfirm) {
+    setConfirmConfig({ title, message, onConfirm })
+    setConfirmOpen(true)
   }
 
-  async function handleRoleChange(u, role) {
-    if (!window.confirm(`Change role for "${u.full_name || u.email}" to ${role}?`)) return
-    try {
-      await updateRole(u.id, role)
-    } catch (err) {
-      setError(err.message || 'Failed to update role')
-    }
+  function handleToggleActive(u) {
+    const active = u.is_active ?? true
+    showConfirm(
+      `${active ? 'Deactivate' : 'Activate'} User`,
+      `${active ? 'Deactivate' : 'Activate'} user "${u.full_name || u.email}"?`,
+      async () => {
+        try {
+          await toggleActive(u.id, !active)
+          addToast(`User ${active ? 'deactivated' : 'activated'} successfully`)
+        } catch (err) {
+          setError(err.message || 'Failed to toggle user status')
+        }
+        setConfirmOpen(false)
+      }
+    )
+  }
+
+  function handleRoleChange(u, role) {
+    showConfirm(
+      'Change Role',
+      `Change role for "${u.full_name || u.email}" to ${role}?`,
+      async () => {
+        try {
+          await updateRole(u.id, role)
+          addToast('Role updated successfully')
+        } catch (err) {
+          setError(err.message || 'Failed to update role')
+        }
+        setConfirmOpen(false)
+      }
+    )
   }
 
   const columnHelper = createColumnHelper()
@@ -139,7 +164,7 @@ export default function Users() {
       {loading ? (
         <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-300">
+        <div className="card bg-base-100 border border-base-200/80 card-hover">
           <div className="card-body p-3">
             <DataTable columns={columns} data={users} searchPlaceholder="Search users..." />
           </div>
@@ -181,6 +206,16 @@ export default function Users() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmLabel="Confirm"
+        danger
+      />
     </div>
   )
 }

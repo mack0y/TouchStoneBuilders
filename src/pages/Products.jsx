@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { useProducts } from '../hooks/useProducts'
 import { useCategories } from '../hooks/useCategories'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import PageHeader from '../components/ui/PageHeader'
 import DataTable from '../components/ui/DataTable'
 import Modal from '../components/ui/Modal'
+import ConfirmModal from '../components/ui/ConfirmModal'
 import { createColumnHelper } from '@tanstack/react-table'
 
 const units = ['pcs', 'kg', 'sack', 'meter', 'liter', 'sheet', 'box', 'pack', 'set', 'gallon', 'roll', 'bd.ft', 'cu.m', 'pair']
@@ -22,6 +24,9 @@ export default function Products() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const { addToast } = useToast()
 
   function openCreate() {
     setEditing(null)
@@ -71,6 +76,7 @@ export default function Products() {
         await createProduct(payload)
       }
       setModalOpen(false)
+      addToast(editing ? 'Product updated successfully' : 'Product created successfully')
     } catch (err) {
       setError(err.message || 'Failed to save product')
     } finally {
@@ -79,9 +85,23 @@ export default function Products() {
   }
 
   function handleDelete(product) {
-    if (window.confirm(`Delete "${product.name}"? This cannot be undone.`)) {
-      deleteProduct(product.id).catch((err) => setError(err.message))
-    }
+    setDeleteTarget(product)
+    setConfirmOpen(true)
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget) return
+    deleteProduct(deleteTarget.id)
+      .then(() => {
+        addToast('Product deleted successfully')
+        setConfirmOpen(false)
+        setDeleteTarget(null)
+      })
+      .catch((err) => {
+        setError(err.message)
+        setConfirmOpen(false)
+        setDeleteTarget(null)
+      })
   }
 
   const filtered = categoryFilter
@@ -149,7 +169,7 @@ export default function Products() {
       {loading ? (
         <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-300">
+        <div className="card bg-base-100 border border-base-200/80 card-hover">
           <div className="card-body p-3">
             <DataTable columns={columns} data={filtered} searchPlaceholder="Search products..." />
           </div>
@@ -227,6 +247,16 @@ export default function Products() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onClose={() => { setConfirmOpen(false); setDeleteTarget(null) }}
+        onConfirm={confirmDelete}
+        title="Delete Product"
+        message={deleteTarget ? `Delete "${deleteTarget.name}"? This cannot be undone.` : ''}
+        confirmLabel="Delete"
+        danger
+      />
     </div>
   )
 }

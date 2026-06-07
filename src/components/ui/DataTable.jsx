@@ -30,17 +30,22 @@ export default function DataTable({ columns, data, search, searchPlaceholder }) 
     <div>
       {search !== false && (
         <div className="mb-3">
-          <input
-            className="input input-bordered input-sm w-full max-w-xs"
-            placeholder={searchPlaceholder || 'Search...'}
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-          />
+          <div className="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/30">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+            <input
+              className="input input-bordered input-sm w-full max-w-xs pl-9"
+              placeholder={searchPlaceholder || 'Search...'}
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+            />
+          </div>
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="table table-zinc table-sm">
+      <div className="overflow-x-auto mobile-card-view">
+        <table className="table table-zebra table-sm">
           <thead>
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
@@ -48,11 +53,13 @@ export default function DataTable({ columns, data, search, searchPlaceholder }) 
                   <th
                     key={header.id}
                     aria-sort={header.column.getIsSorted() || undefined}
-                    className={header.column.getCanSort() ? 'cursor-pointer select-none' : ''}
+                    className={`${header.column.getCanSort() ? 'cursor-pointer select-none hover:bg-base-200/50' : ''} text-xs uppercase tracking-wider text-base-content/50 font-semibold`}
                     onClick={header.column.getToggleSortingHandler()}
                   >
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                    {{ asc: ' ▲', desc: ' ▼' }[header.column.getIsSorted()] ?? ''}
+                    <span className="flex items-center gap-1">
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      {{ asc: '↑', desc: '↓' }[header.column.getIsSorted()] ?? ''}
+                    </span>
                   </th>
                 ))}
               </tr>
@@ -60,9 +67,9 @@ export default function DataTable({ columns, data, search, searchPlaceholder }) 
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id}>
+              <tr key={row.id} className="hover:bg-base-200/30 transition-colors">
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id}>
+                  <td key={cell.id} data-label={flexRender(cell.column.columnDef.header, cell.getContext())}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -70,8 +77,11 @@ export default function DataTable({ columns, data, search, searchPlaceholder }) 
             ))}
             {table.getRowModel().rows.length === 0 && (
               <tr>
-                <td colSpan={columns.length} className="text-center text-base-content/40 py-8" role="status">
-                  No results found
+                <td colSpan={columns.length} className="text-center text-base-content/30 py-12" role="status">
+                  <div className="flex flex-col items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-10 h-10 mb-2 text-base-content/20"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                    <p className="text-sm">No results found</p>
+                  </div>
                 </td>
               </tr>
             )}
@@ -80,16 +90,16 @@ export default function DataTable({ columns, data, search, searchPlaceholder }) 
       </div>
 
       <div className="flex items-center justify-between mt-3 text-sm">
-        <div className="text-base-content/50">
+        <div className="text-base-content/40 text-xs">
           {table.getPageCount() > 0
             ? `Page ${table.getState().pagination.pageIndex + 1} of ${table.getPageCount()}`
             : 'No results'}
         </div>
         <div className="flex gap-1">
-          <button className="btn btn-ghost btn-xs" aria-label="First page" onClick={() => table.firstPage()} disabled={!table.getCanPreviousPage()}>««</button>
-          <button className="btn btn-ghost btn-xs" aria-label="Previous page" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>«</button>
-          <button className="btn btn-ghost btn-xs" aria-label="Next page" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>»</button>
-          <button className="btn btn-ghost btn-xs" aria-label="Last page" onClick={() => table.lastPage()} disabled={!table.getCanNextPage()}>»»</button>
+          <button className="btn btn-ghost btn-xs rounded-lg" aria-label="First page" onClick={() => table.firstPage()} disabled={!table.getCanPreviousPage()}>««</button>
+          <button className="btn btn-ghost btn-xs rounded-lg" aria-label="Previous page" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>«</button>
+          <button className="btn btn-ghost btn-xs rounded-lg" aria-label="Next page" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>»</button>
+          <button className="btn btn-ghost btn-xs rounded-lg" aria-label="Last page" onClick={() => table.lastPage()} disabled={!table.getCanNextPage()}>»»</button>
         </div>
       </div>
     </div>

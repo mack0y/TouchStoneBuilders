@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useCustomers } from '../hooks/useCustomers'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import PageHeader from '../components/ui/PageHeader'
 import DataTable from '../components/ui/DataTable'
 import Modal from '../components/ui/Modal'
+import ConfirmModal from '../components/ui/ConfirmModal'
 import { createColumnHelper } from '@tanstack/react-table'
 
 const emptyForm = { name: '', phone: '', email: '', address: '' }
@@ -25,6 +27,9 @@ export default function Customers() {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
   const [pageError, setPageError] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const { addToast } = useToast()
 
   function openCreate() {
     setEditing(null)
@@ -66,6 +71,7 @@ export default function Customers() {
         await createCustomer(payload)
       }
       setModalOpen(false)
+      addToast(editing ? 'Customer updated successfully' : 'Customer created successfully')
     } catch (err) {
       setFormError(err.message || 'Failed to save customer')
     } finally {
@@ -74,11 +80,24 @@ export default function Customers() {
   }
 
   function handleDelete(customer) {
-    if (!window.confirm(`Delete customer "${customer.name}"? This cannot be undone.`)) return
+    setDeleteTarget(customer)
+    setConfirmOpen(true)
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget) return
     setPageError('')
-    deleteCustomer(customer.id).catch((err) => {
-      setPageError(translateDeleteError(err.message))
-    })
+    deleteCustomer(deleteTarget.id)
+      .then(() => {
+        addToast('Customer deleted successfully')
+        setConfirmOpen(false)
+        setDeleteTarget(null)
+      })
+      .catch((err) => {
+        setPageError(translateDeleteError(err.message))
+        setConfirmOpen(false)
+        setDeleteTarget(null)
+      })
   }
 
   const columnHelper = createColumnHelper()
@@ -123,7 +142,7 @@ export default function Customers() {
       {loading ? (
         <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-300">
+        <div className="card bg-base-100 border border-base-200/80 card-hover">
           <div className="card-body p-3">
             <DataTable columns={columns} data={customers} searchPlaceholder="Search customers..." />
           </div>
@@ -163,6 +182,16 @@ export default function Customers() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onClose={() => { setConfirmOpen(false); setDeleteTarget(null) }}
+        onConfirm={confirmDelete}
+        title="Delete Customer"
+        message={deleteTarget ? `Delete customer "${deleteTarget.name}"? This cannot be undone.` : ''}
+        confirmLabel="Delete"
+        danger
+      />
     </div>
   )
 }

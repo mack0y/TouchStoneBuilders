@@ -73,16 +73,16 @@ export default function Purchases() {
   return (
     <div>
       <PageHeader
-        title="Purchases"
-        description={loading ? 'Loading...' : `${purchases.length} purchase${purchases.length !== 1 ? 's' : ''} ${rangeText}`}
+        title="Stock In"
+        description={loading ? 'Loading...' : `${purchases.length} record${purchases.length !== 1 ? 's' : ''} ${rangeText}`}
         actions={
-          <button className="btn btn-primary btn-sm" onClick={() => navigate('/purchases/new')}>
-            + New Purchase
+          <button className="btn btn-primary btn-sm shadow-sm" onClick={() => navigate('/stock-in/new')}>
+            + New Stock In
           </button>
         }
       />
 
-      <div className="card bg-base-100 border border-base-300 mb-4">
+      <div className="card bg-base-100 border border-base-200/80 card-hover mb-4">
         <div className="card-body p-3 flex-row items-end gap-3 flex-wrap">
           <label className="form-control" htmlFor="purchases-from">
             <span className="label-text text-xs">From</span>
@@ -119,9 +119,9 @@ export default function Purchases() {
       {loading ? (
         <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-300">
+        <div className="card bg-base-100 border border-base-200/80 card-hover">
           <div className="card-body p-3">
-            <DataTable columns={columns} data={purchases} searchPlaceholder="Search purchases..." />
+            <            DataTable columns={columns} data={purchases} searchPlaceholder="Search stock in records..." />
           </div>
         </div>
       )}

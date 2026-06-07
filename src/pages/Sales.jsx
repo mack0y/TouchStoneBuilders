@@ -73,7 +73,7 @@ export default function Sales() {
         }
       />
 
-      <div className="card bg-base-100 border border-base-300 mb-4">
+      <div className="card bg-base-100 border border-base-200/80 card-hover mb-4">
         <div className="card-body p-3 flex-row items-end gap-3 flex-wrap">
           <label className="form-control" htmlFor="sales-from">
             <span className="label-text text-xs">From</span>
@@ -110,7 +110,7 @@ export default function Sales() {
       {loading ? (
         <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-300">
+        <div className="card bg-base-100 border border-base-200/80 card-hover">
           <div className="card-body p-3">
             <DataTable columns={columns} data={sales} searchPlaceholder="Search invoices..." />
           </div>

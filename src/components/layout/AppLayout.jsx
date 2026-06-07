@@ -6,7 +6,6 @@ const icons = {
   dashboard: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6Zm0 9.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6Zm0 9.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>,
   products: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" /></svg>,
   sales: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>,
-  purchases: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" /></svg>,
   customers: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" /></svg>,
   suppliers: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Z" /></svg>,
   reports: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" /></svg>,
@@ -16,14 +15,17 @@ const icons = {
   logout: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>,
   menu: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>,
   categories: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" /></svg>,
+  inventory: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125zM2.25 12h9m-9 3h6m-6 3h6m3-9h9m-9 3h9m-9 3h9" /></svg>,
+  home: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>,
+  plus: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>,
 }
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: icons.dashboard },
+  { to: '/', label: 'Dashboard', icon: icons.dashboard, mobileIcon: icons.home },
   { to: '/products', label: 'Products', icon: icons.products },
   { to: '/categories', label: 'Categories', icon: icons.categories },
+  { to: '/inventory', label: 'Inventory', icon: icons.inventory },
   { to: '/sales', label: 'Sales', icon: icons.sales },
-  { to: '/purchases', label: 'Purchases', icon: icons.purchases },
   { to: '/customers', label: 'Customers', icon: icons.customers },
 ]
 
@@ -33,6 +35,15 @@ const adminNavItems = [
   { to: '/users', label: 'Users', icon: icons.users },
 ]
 
+// Bottom nav items for mobile (most important 5)
+const mobileNavItems = [
+  { to: '/', label: 'Home', icon: icons.home },
+  { to: '/products', label: 'Products', icon: icons.products },
+  { to: '/inventory', label: 'Inventory', icon: icons.inventory },
+  { to: '/sales', label: 'Sales', icon: icons.sales },
+  { to: '/customers', label: 'Customers', icon: icons.customers },
+]
+
 function NavItem({ item, collapsed }) {
   return (
     <li>
@@ -40,13 +51,38 @@ function NavItem({ item, collapsed }) {
         to={item.to}
         end={item.to === '/'}
         aria-label={item.label}
-        className={({ isActive }) => (isActive ? 'active' : '') + (collapsed ? ' tooltip tooltip-right' : '')}
+        className={({ isActive }) =>
+          'transition-all duration-150 ' +
+          (isActive
+            ? 'bg-primary/10 text-primary font-semibold border-l-3 border-primary'
+            : 'hover:bg-base-300/50 hover:text-base-content') +
+          (collapsed ? ' tooltip tooltip-right justify-center' : '')
+        }
         data-tip={collapsed ? item.label : undefined}
       >
         {item.icon}
-        {!collapsed && <span>{item.label}</span>}
+        {!collapsed && <span className="text-sm">{item.label}</span>}
       </NavLink>
     </li>
+  )
+}
+
+function MobileNavItem({ item }) {
+  return (
+    <NavLink
+      to={item.to}
+      end={item.to === '/'}
+      aria-label={item.label}
+      className={({ isActive }) =>
+        'flex flex-col items-center gap-0.5 py-1 px-2 rounded-lg transition-all duration-150 min-w-[3.5rem] ' +
+        (isActive
+          ? 'text-primary font-semibold'
+          : 'text-base-content/50 active:text-primary')
+      }
+    >
+      {item.mobileIcon || item.icon}
+      <span className="text-[10px] leading-tight">{item.label}</span>
+    </NavLink>
   )
 }
 
@@ -71,60 +107,75 @@ export default function AppLayout() {
       <input id="sidebar-drawer" type="checkbox" className="drawer-toggle" />
 
       <div className="drawer-content flex flex-col min-h-screen">
-        <nav className="navbar bg-base-100 border-b border-base-200 gap-2">
+        {/* Top navbar */}
+        <nav className="navbar bg-base-100/80 backdrop-blur-md border-b border-base-200/80 gap-2 sticky top-0 z-30">
           <div className="flex-none lg:hidden">
-            <label htmlFor="sidebar-drawer" className="btn btn-square btn-ghost">
+            <label htmlFor="sidebar-drawer" className="btn btn-square btn-ghost btn-sm">
               {icons.menu}
             </label>
           </div>
-          <div className="flex-1 font-bold truncate">TouchStone Builders</div>
+          <div className="flex-1">
+            <span className="font-bold text-base bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              TouchStone Builders
+            </span>
+          </div>
           <div className="flex-none flex items-center gap-2">
             <div className="avatar placeholder hidden sm:flex">
-              <div className="bg-primary text-primary-content rounded-full w-8 text-xs font-bold">
+              <div className="bg-gradient-to-br from-primary to-secondary text-primary-content rounded-full w-8 text-xs font-bold shadow-sm">
                 {initial}
               </div>
             </div>
-            <span className="text-sm hidden sm:inline text-base-content/70">
+            <span className="text-sm hidden sm:inline text-base-content/60">
               {profile?.full_name || 'User'}
             </span>
-            <button className="btn btn-ghost btn-sm btn-square" onClick={handleLogout} aria-label="Logout" title="Logout">
+            <button className="btn btn-ghost btn-sm btn-square text-base-content/50 hover:text-error" onClick={handleLogout} aria-label="Logout" title="Logout">
               {icons.logout}
             </button>
           </div>
         </nav>
 
-        <main className="flex-1 p-4 lg:p-6 bg-base-100">
+        <main className="flex-1 p-4 lg:p-6 bg-base-200/30">
           <Outlet />
         </main>
       </div>
 
-      <div className="drawer-side">
+      {/* Sidebar */}
+      <div className="drawer-side z-40">
         <label htmlFor="sidebar-drawer" className="drawer-overlay"></label>
 
-        <aside aria-label="Sidebar navigation" className={`flex flex-col min-h-full bg-base-200 border-r border-base-300 transition-all duration-200 ${collapsed ? 'w-[4.5rem]' : 'w-64'}`}>
-          <div className={`flex items-center p-4 border-b border-base-300 ${collapsed ? 'justify-center' : 'justify-between'}`}>
+        <aside aria-label="Sidebar navigation" className={`flex flex-col min-h-full bg-base-100 border-r border-base-200 transition-all duration-300 ease-in-out ${collapsed ? 'w-[4.5rem]' : 'w-64'}`}>
+          {/* Brand header */}
+          <div className={`flex items-center p-4 border-b border-base-200 ${collapsed ? 'justify-center' : 'justify-between'}`}>
             {!collapsed && (
-              <div>
-                <h1 className="font-bold truncate">TouchStone</h1>
-                <p className="text-xs text-base-content/50 truncate">{profile?.full_name || 'User'}</p>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0 shadow-sm">
+                  <span className="text-white font-bold text-sm">T</span>
+                </div>
+                <div className="min-w-0">
+                  <h1 className="font-bold text-sm truncate">TouchStone</h1>
+                  <p className="text-[11px] text-base-content/40 truncate">{profile?.full_name || 'User'}</p>
+                </div>
               </div>
             )}
             <button
-              className="btn btn-ghost btn-square btn-sm hidden lg:flex"
+              className="btn btn-ghost btn-square btn-sm hidden lg:flex text-base-content/40 hover:text-base-content"
               onClick={() => setCollapsed(!collapsed)}
             >
               {collapsed ? icons.collapseRight : icons.collapseLeft}
             </button>
           </div>
 
-          <ul className={`menu p-2 gap-1 flex-1 ${collapsed ? 'items-center' : ''}`}>
+          {/* Navigation */}
+          <ul className={`menu p-2 gap-0.5 flex-1 ${collapsed ? 'items-center' : ''}`}>
             {navItems.map((item) => (
               <NavItem key={item.to} item={item} collapsed={collapsed} />
             ))}
 
             {isAdmin && (
               <>
-                <li className={`menu-title ${collapsed ? 'hidden' : ''}`}><span>Administration</span></li>
+                <li className={`menu-title mt-2 mb-1 ${collapsed ? 'hidden' : ''}`}>
+                  <span className="text-[10px] uppercase tracking-wider text-base-content/30 font-semibold">Administration</span>
+                </li>
                 {adminNavItems.map((item) => (
                   <NavItem key={item.to} item={item} collapsed={collapsed} />
                 ))}
@@ -132,13 +183,21 @@ export default function AppLayout() {
             )}
           </ul>
 
-          <div className={`p-2 border-t border-base-300 ${collapsed ? 'flex justify-center' : ''}`}>
-            <button className={`btn btn-soft btn-sm ${collapsed ? 'btn-square' : 'w-full'}`} onClick={handleLogout} aria-label="Logout">
+          {/* Logout at bottom */}
+          <div className={`p-2 border-t border-base-200 ${collapsed ? 'flex justify-center' : ''}`}>
+            <button className={`btn btn-ghost btn-sm text-base-content/50 hover:text-error ${collapsed ? 'btn-square' : 'w-full justify-start'}`} onClick={handleLogout} aria-label="Logout">
               {icons.logout}
-              {!collapsed && <span>Logout</span>}
+              {!collapsed && <span className="text-sm">Logout</span>}
             </button>
           </div>
         </aside>
+      </div>
+
+      {/* Mobile bottom navigation */}
+      <div className="mobile-bottom-nav">
+        {mobileNavItems.map((item) => (
+          <MobileNavItem key={item.to} item={item} />
+        ))}
       </div>
     </div>
   )

@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useSuppliers } from '../hooks/useSuppliers'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import PageHeader from '../components/ui/PageHeader'
 import DataTable from '../components/ui/DataTable'
 import Modal from '../components/ui/Modal'
+import ConfirmModal from '../components/ui/ConfirmModal'
 import { createColumnHelper } from '@tanstack/react-table'
 
 const emptyForm = { name: '', contact_person: '', phone: '', email: '', address: '' }
@@ -25,6 +27,9 @@ export default function Suppliers() {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
   const [pageError, setPageError] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const { addToast } = useToast()
 
   function openCreate() {
     setEditing(null)
@@ -68,6 +73,7 @@ export default function Suppliers() {
         await createSupplier(payload)
       }
       setModalOpen(false)
+      addToast(editing ? 'Supplier updated successfully' : 'Supplier created successfully')
     } catch (err) {
       setFormError(err.message || 'Failed to save supplier')
     } finally {
@@ -76,11 +82,24 @@ export default function Suppliers() {
   }
 
   function handleDelete(supplier) {
-    if (!window.confirm(`Delete supplier "${supplier.name}"? This cannot be undone.`)) return
+    setDeleteTarget(supplier)
+    setConfirmOpen(true)
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget) return
     setPageError('')
-    deleteSupplier(supplier.id).catch((err) => {
-      setPageError(translateDeleteError(err.message))
-    })
+    deleteSupplier(deleteTarget.id)
+      .then(() => {
+        addToast('Supplier deleted successfully')
+        setConfirmOpen(false)
+        setDeleteTarget(null)
+      })
+      .catch((err) => {
+        setPageError(translateDeleteError(err.message))
+        setConfirmOpen(false)
+        setDeleteTarget(null)
+      })
   }
 
   const columnHelper = createColumnHelper()
@@ -108,7 +127,7 @@ export default function Suppliers() {
 
   if (!isAdmin) {
     return (
-      <div className="card bg-base-100 border border-base-300">
+      <div className="card bg-base-100 border border-base-200/80 card-hover">
         <div className="card-body items-center py-16 text-base-content/40">
           <p className="text-lg font-medium">Access denied</p>
           <p className="text-sm mt-1">You do not have permission to view this page.</p>
@@ -134,7 +153,7 @@ export default function Suppliers() {
       {loading ? (
         <div className="flex justify-center py-10"><span className="loading loading-spinner loading-lg text-primary"></span></div>
       ) : (
-        <div className="card bg-base-100 border border-base-300">
+        <div className="card bg-base-100 border border-base-200/80 card-hover">
           <div className="card-body p-3">
             <DataTable columns={columns} data={suppliers} searchPlaceholder="Search suppliers..." />
           </div>
@@ -180,6 +199,16 @@ export default function Suppliers() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onClose={() => { setConfirmOpen(false); setDeleteTarget(null) }}
+        onConfirm={confirmDelete}
+        title="Delete Supplier"
+        message={deleteTarget ? `Delete supplier "${deleteTarget.name}"? This cannot be undone.` : ''}
+        confirmLabel="Delete"
+        danger
+      />
     </div>
   )
 }

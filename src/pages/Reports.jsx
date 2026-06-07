@@ -30,19 +30,19 @@ export default function Reports() {
 
       {error && <div className="alert alert-error text-sm mb-4" role="alert">{error}</div>}
 
-      <div className="card bg-base-100 border border-base-300 mb-4">
-        <div className="card-body p-3">
+      <div className="card bg-base-100 border border-base-200/80 card-hover mb-4">
+        <div className="card-body p-4">
           <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
         </div>
       </div>
 
-      <div role="tablist" className="tabs tabs-bordered mb-4">
+      <div role="tablist" className="tabs tabs-bordered mb-4 gap-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             role="tab"
             type="button"
-            className={`tab ${activeTab === tab.id ? 'tab-active' : ''}`}
+            className={`tab transition-all duration-150 ${activeTab === tab.id ? 'tab-active font-semibold' : 'hover:bg-base-200/50'}`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
@@ -50,19 +50,24 @@ export default function Reports() {
         ))}
       </div>
 
-      {activeTab === 'sales' && salesReport && renderSalesTab(salesReport, startDate, endDate)}
-      {activeTab === 'inventory' && inventoryReport && renderInventoryTab(inventoryReport)}
-      {activeTab === 'profit' && profitReport && renderProfitTab(profitReport, startDate, endDate)}
+      <div className="animate-fade-in">
+        {activeTab === 'sales' && salesReport && renderSalesTab(salesReport, startDate, endDate)}
+        {activeTab === 'inventory' && inventoryReport && renderInventoryTab(inventoryReport)}
+        {activeTab === 'profit' && profitReport && renderProfitTab(profitReport, startDate, endDate)}
+      </div>
     </div>
   )
 }
 
-function SummaryCard({ label, value, color }) {
+function SummaryCard({ label, value, color, icon }) {
   return (
-    <div className="card bg-base-100 border border-base-300">
+    <div className="card bg-base-100 border border-base-200/80 card-hover animate-fade-in-up">
       <div className="card-body p-4">
-        <p className="text-sm text-base-content/60">{label}</p>
-        <p className={`text-2xl font-bold ${color || ''}`}>{value}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-base-content/50 font-medium">{label}</p>
+          {icon}
+        </div>
+        <p className={`text-xl sm:text-2xl font-bold tracking-tight mt-1 ${color || ''}`}>{value}</p>
       </div>
     </div>
   )
@@ -74,26 +79,11 @@ function renderSalesTab(report, startDate, endDate) {
   function handleExport() {
     const csv = convertToCSV(
       [
-        {
-          metric: 'Total Sales (Count)',
-          value: report.totalSales,
-        },
-        {
-          metric: 'Total Revenue',
-          value: report.totalRevenue,
-        },
-        {
-          metric: 'Total Discount',
-          value: report.totalDiscount,
-        },
-        {
-          metric: 'Items Sold',
-          value: report.totalItems,
-        },
-        {
-          metric: 'Avg Order Value',
-          value: report.avgOrderValue,
-        },
+        { metric: 'Total Sales (Count)', value: report.totalSales },
+        { metric: 'Total Revenue', value: report.totalRevenue },
+        { metric: 'Total Discount', value: report.totalDiscount },
+        { metric: 'Items Sold', value: report.totalItems },
+        { metric: 'Avg Order Value', value: report.avgOrderValue },
       ],
       ['metric', 'value']
     )
@@ -103,10 +93,13 @@ function renderSalesTab(report, startDate, endDate) {
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <button type="button" className="btn btn-soft btn-sm" onClick={handleExport}>Export CSV</button>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={handleExport}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+          Export CSV
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 mb-6 stagger-children">
         <SummaryCard label="Total Sales" value={report.totalSales.toLocaleString()} />
         <SummaryCard label="Total Revenue" value={peso(report.totalRevenue)} color="text-success" />
         <SummaryCard label="Total Discount" value={peso(report.totalDiscount)} color="text-warning" />
@@ -114,8 +107,8 @@ function renderSalesTab(report, startDate, endDate) {
         <SummaryCard label="Avg Order Value" value={peso(report.avgOrderValue)} color="text-info" />
       </div>
 
-      <div className="text-sm text-base-content/50">
-        Showing report: <strong>{suffix}</strong>
+      <div className="text-xs text-base-content/40 font-medium">
+        Showing report: <span className="badge badge-ghost badge-sm">{suffix}</span>
       </div>
     </div>
   )
@@ -130,44 +123,47 @@ function renderInventoryTab(report) {
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <button type="button" className="btn btn-soft btn-sm" onClick={handleExport}>Export CSV</button>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={handleExport}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+          Export CSV
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 stagger-children">
         <SummaryCard label="Total Products" value={report.totalProducts.toLocaleString()} />
-        <SummaryCard label="Stock Value (At Selling Price)" value={peso(report.totalStockValue)} color="text-info" />
-        <SummaryCard label="Stock Value (At Cost)" value={peso(report.totalCostValue)} color="text-warning" />
+        <SummaryCard label="Stock Value (Selling)" value={peso(report.totalStockValue)} color="text-info" />
+        <SummaryCard label="Stock Value (Cost)" value={peso(report.totalCostValue)} color="text-warning" />
         <SummaryCard label="Low Stock Items" value={report.lowStockCount.toLocaleString()} color={report.lowStockCount > 0 ? 'text-error' : ''} />
         <SummaryCard label="Out of Stock" value={report.outOfStockCount.toLocaleString()} color={report.outOfStockCount > 0 ? 'text-error' : ''} />
       </div>
 
-      <div className="card bg-base-100 border border-base-300">
+      <div className="card bg-base-100 border border-base-200/80">
         <div className="card-body p-3">
-          <div className="overflow-x-auto">
-            <table className="table table-zinc table-sm">
+          <div className="overflow-x-auto mobile-card-view">
+            <table className="table table-zebra table-sm">
               <thead>
                 <tr>
-                  <th>Product</th>
-                  <th>SKU</th>
-                  <th>Category</th>
-                  <th className="text-right">Stock</th>
-                  <th className="text-right">Selling Price</th>
-                  <th className="text-right">Cost</th>
-                  <th className="text-right">Stock Value</th>
+                  <th className="text-xs uppercase tracking-wider">Product</th>
+                  <th className="text-xs uppercase tracking-wider">SKU</th>
+                  <th className="text-xs uppercase tracking-wider">Category</th>
+                  <th className="text-xs text-right uppercase tracking-wider">Stock</th>
+                  <th className="text-xs text-right uppercase tracking-wider">Price</th>
+                  <th className="text-xs text-right uppercase tracking-wider">Cost</th>
+                  <th className="text-xs text-right uppercase tracking-wider">Value</th>
                 </tr>
               </thead>
               <tbody>
                 {report.products.map((p) => (
-                  <tr key={p.id} className={p.stock <= 0 ? 'bg-error/5' : ''}>
-                    <td className="font-medium">{p.name}</td>
-                    <td className="text-base-content/60">{p.sku}</td>
-                    <td className="text-base-content/60">{p.category}</td>
-                    <td className={`text-right ${p.stock <= 0 ? 'text-error font-medium' : ''}`}>
+                  <tr key={p.id} className={`hover:bg-base-200/30 transition-colors ${p.stock <= 0 ? 'bg-error/5' : ''}`}>
+                    <td data-label="Product" className="font-medium">{p.name}</td>
+                    <td data-label="SKU" className="text-base-content/50 text-sm">{p.sku}</td>
+                    <td data-label="Category" className="text-base-content/50 text-sm">{p.category}</td>
+                    <td data-label="Stock" className={`text-right ${p.stock <= 0 ? 'text-error font-medium' : ''}`}>
                       {p.stock.toLocaleString()} {p.unit}
                     </td>
-                    <td className="text-right">{peso(p.price)}</td>
-                    <td className="text-right">{peso(p.cost)}</td>
-                    <td className="text-right font-medium">{peso(p.stockValue)}</td>
+                    <td data-label="Price" className="text-right text-sm">{peso(p.price)}</td>
+                    <td data-label="Cost" className="text-right text-sm">{peso(p.cost)}</td>
+                    <td data-label="Value" className="text-right font-medium">{peso(p.stockValue)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -212,52 +208,58 @@ function renderProfitTab(report, startDate, endDate) {
 
   return (
     <div>
-      <div className="flex justify-end gap-2 mb-4">
-        <button type="button" className="btn btn-soft btn-sm" onClick={handleExport}>Export Summary CSV</button>
+      <div className="flex justify-end gap-2 mb-4 flex-wrap">
+        <button type="button" className="btn btn-ghost btn-sm" onClick={handleExport}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+          Export Summary
+        </button>
         {report.topProductsByProfit.length > 0 && (
-          <button type="button" className="btn btn-soft btn-sm" onClick={handleProductExport}>Export Products CSV</button>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={handleProductExport}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+            Export Products
+          </button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 stagger-children">
         <SummaryCard label="Total Revenue" value={peso(report.totalRevenue)} color="text-success" />
         <SummaryCard label="Total COGS" value={peso(report.totalCOGS)} color="text-warning" />
         <SummaryCard label="Gross Profit" value={peso(report.grossProfit)} color={report.grossProfit >= 0 ? 'text-success' : 'text-error'} />
         <SummaryCard label="Profit Margin" value={`${report.profitMargin.toFixed(1)}%`} color={report.profitMargin >= 0 ? 'text-success' : 'text-error'} />
       </div>
 
-      <div className="card bg-base-100 border border-base-300">
+      <div className="card bg-base-100 border border-base-200/80">
         <div className="card-body p-3">
-          <h3 className="font-bold text-base mb-3">Top Products by Profit</h3>
+          <h3 className="font-semibold text-sm mb-3">Top Products by Profit</h3>
           {report.topProductsByProfit.length === 0 ? (
-            <p className="text-sm text-base-content/40 py-4 text-center">No sales data</p>
+            <p className="text-sm text-base-content/30 py-8 text-center">No sales data</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="table table-zinc table-sm">
+            <div className="overflow-x-auto mobile-card-view">
+              <table className="table table-zebra table-sm">
                 <thead>
                   <tr>
-                    <th>Product</th>
-                    <th className="text-right">Qty Sold</th>
-                    <th className="text-right">Revenue</th>
-                    <th className="text-right">COGS</th>
-                    <th className="text-right">Profit</th>
-                    <th className="text-right">Margin</th>
+                    <th className="text-xs uppercase tracking-wider">Product</th>
+                    <th className="text-xs text-right uppercase tracking-wider">Qty</th>
+                    <th className="text-xs text-right uppercase tracking-wider">Revenue</th>
+                    <th className="text-xs text-right uppercase tracking-wider">COGS</th>
+                    <th className="text-xs text-right uppercase tracking-wider">Profit</th>
+                    <th className="text-xs text-right uppercase tracking-wider">Margin</th>
                   </tr>
                 </thead>
                 <tbody>
                   {report.topProductsByProfit.map((p, i) => (
-                    <tr key={p.sku || i}>
-                      <td>
-                        <div className="font-medium">{p.name}</div>
-                        <div className="text-xs text-base-content/50">{p.sku}</div>
+                    <tr key={p.sku || i} className="hover:bg-base-200/30 transition-colors">
+                      <td data-label="Product">
+                        <div className="font-medium text-sm">{p.name}</div>
+                        <div className="text-xs text-base-content/40">{p.sku}</div>
                       </td>
-                      <td className="text-right">{p.qty.toLocaleString()}</td>
-                      <td className="text-right">{peso(p.revenue)}</td>
-                      <td className="text-right">{peso(p.cogs)}</td>
-                      <td className={`text-right font-medium ${p.profit >= 0 ? 'text-success' : 'text-error'}`}>
+                      <td data-label="Qty" className="text-right text-sm">{p.qty.toLocaleString()}</td>
+                      <td data-label="Revenue" className="text-right text-sm">{peso(p.revenue)}</td>
+                      <td data-label="COGS" className="text-right text-sm">{peso(p.cogs)}</td>
+                      <td data-label="Profit" className={`text-right font-medium text-sm ${p.profit >= 0 ? 'text-success' : 'text-error'}`}>
                         {peso(p.profit)}
                       </td>
-                      <td className={`text-right ${p.margin >= 0 ? 'text-success' : 'text-error'}`}>
+                      <td data-label="Margin" className={`text-right text-sm ${p.margin >= 0 ? 'text-success' : 'text-error'}`}>
                         {p.margin.toFixed(1)}%
                       </td>
                     </tr>
