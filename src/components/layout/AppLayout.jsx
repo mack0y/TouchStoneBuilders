@@ -109,14 +109,14 @@ export default function AppLayout() {
             </span>
           </div>
           <div className="flex-none flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-[#1e3a5f] flex items-center justify-center">
-                <span className="text-white text-xs font-semibold">{initial}</span>
+              <div className="hidden sm:flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full overflow-hidden">
+                  <img src={`${import.meta.env.BASE_URL}logo.jpg`} alt="TSB" className="w-full h-full object-cover" />
+                </div>
+                <span className="text-sm text-slate-600">
+                  {profile?.full_name || 'User'}
+                </span>
               </div>
-              <span className="text-sm text-slate-600">
-                {profile?.full_name || 'User'}
-              </span>
-            </div>
             <button className="btn btn-ghost btn-sm btn-square text-slate-400 hover:text-red-500" onClick={handleLogout} aria-label="Logout" title="Logout">
               {icons.logout}
             </button>
@@ -137,8 +137,8 @@ export default function AppLayout() {
           <div className={`flex items-center p-4 border-b border-slate-100 ${collapsed ? 'justify-center' : 'justify-between'}`}>
             {!collapsed && (
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-[#1e3a5f] flex items-center justify-center shrink-0">
-                  <span className="text-white font-bold text-sm">T</span>
+                <div className="w-8 h-8 rounded-lg shrink-0 overflow-hidden">
+                  <img src={`${import.meta.env.BASE_URL}logo.jpg`} alt="TSB" className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
                   <h1 className="font-bold text-sm text-slate-800 truncate">TouchStone</h1>

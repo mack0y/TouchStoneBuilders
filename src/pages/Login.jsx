@@ -31,8 +31,8 @@ export default function Login() {
           <div className="p-8">
             {/* Brand header */}
             <div className="flex flex-col items-center mb-8">
-              <div className="w-12 h-12 rounded-lg bg-[#1e3a5f] flex items-center justify-center mb-4">
-                <span className="text-white font-bold text-xl">T</span>
+              <div className="w-16 h-16 rounded-lg mb-4 overflow-hidden">
+                <img src={`${import.meta.env.BASE_URL}logo.jpg`} alt="TSB" className="w-full h-full object-cover" />
               </div>
               <h1 className="text-xl font-bold text-slate-800">
                 TouchStone Builders
